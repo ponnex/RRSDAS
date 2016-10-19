@@ -69,22 +69,22 @@
   	}
   </style>
 
-  <paper-dialog id="datePickerDialog" class="paper-date-picker-dialog" modal
-    on-iron-overlay-closed="dismissDialog">
+  <paper-dialog id="datePickerDialog" class="paper-date-picker-dialog" with-backdrop
+    on-iron-overlay-closed="dialogClosed">
     <paper-date-picker id="picker" date="{{date}}"></paper-date-picker>
-    <div class="buttons">
+    <!--<div class="buttons">
       <paper-button dialog-dismiss>Cancel</paper-button>
       <paper-button dialog-confirm>OK</paper-button>
-    </div>
+    </div>-->
   </paper-dialog>
 
-  <paper-dialog id="timePickerDialog" class="paper-date-picker-dialog" modal
-    on-iron-overlay-closed="dismissDialog">
+  <paper-dialog id="timePickerDialog" class="paper-date-picker-dialog" with-backdrop
+    on-iron-overlay-closed="dialogClosed">
     <paper-date-picker id="picker" date="{{time}}" responsive-width="600px"></paper-date-picker>
-    <div class="buttons">
+    <!--<div class="buttons">
       <paper-button dialog-dismiss>Cancel</paper-button>
       <paper-button dialog-confirm>OK</paper-button>
-    </div>
+    </div>-->
   </paper-dialog>
 
   <div id="pickercontainer" class="pickercontainer">
@@ -142,8 +142,8 @@
       this.$.chartline1.redraw();
       this.$.chartline2.redraw();
     },
-    dismissDialog: function() {
-      console.log("dialog dismissed");
+    dialogClosed: function() {
+      console.log("dialog closed");
     },
     dateFormat: function(date, format) {
       return moment(date).format(format);
