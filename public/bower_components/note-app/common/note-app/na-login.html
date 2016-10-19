@@ -13,6 +13,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="/bower_components/paper-material/paper-material.html">
 <link rel="import" href="/bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="/bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="/bower_components/iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="/bower_components/iron-flex-layout/iron-flex-layout.html">
 <dom-module id="na-login">
 	<template>
@@ -261,11 +262,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 	</style>
 	<paper-material elevation="1">
 		<paper-input id="username" inputValue="{{value}}" label="Username" value="" required auto-validate type="email" disabled={{disableButton}}></paper-input>
+		<iron-a11y-keys id="a11y" target="[[target]]" keys="enter" on-keys-pressed="signIn"></iron-a11y-keys>
 		<paper-input id="password" class="margin-bottom" inputValue="{{value}}" label="Password" value="" required auto-validate error-message="should not be less than 6 characters" type="password" minlength="6" disabled={{disableButton}}></paper-input>
 
-		<paper-button on-tap="signIn" disabled="[[disabled]]">
+		<paper-button id="signInButton" on-tap="signIn" disabled="[[disabled]]">
 			<iron-icon icon="account-circle"></iron-icon>
-			<span>Sign In</span>
+			<span id="signInText">Sign In</span>
 		</paper-button>
 
 	<!--
@@ -324,15 +326,23 @@ Polymer({
 			reflectToAttribute: true,
 			value: false
 		},
-
 		signedIn: {
 			type: Boolean,
 			reflectToAttribute: true,
 			value: false
-		}
+		},
+		target: {
+	    type: Object,
+	    value: function() {
+	      return this.$.password;
+	    }
+	  }
 	},
 
 	signIn: function() {
+		console.log("signing in");
+		this.$.signInButton.disabled = true;
+		this.$.signInText.innerHTML = "Siging In.."
 		sessionStorage.setItem('username', this.$.username.value);
 		sessionStorage.setItem('password', this.$.password.value);
 		this.fire('sign-in', null, { bubbles: false });

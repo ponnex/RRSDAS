@@ -214,57 +214,62 @@
 			},
 			signIn: function() {
 				this.$.auth.signInWithEmailAndPassword(sessionStorage.getItem('username'), sessionStorage.getItem('password'))
-				.then(function(response) {
+					.then(function(response) {
 
-				document.querySelector('na-login').$.username.value = "";
-				document.querySelector('na-login').$.password.value = "";
+						document.querySelector('na-login').$.username.value = "";
+						document.querySelector('na-login').$.password.value = "";
+						document.querySelector('na-login').$.username.invalid = false;
+						document.querySelector('na-login').$.password.invalid = false;
+						document.querySelector('na-login').$.signInButton.disabled = false;
+						document.querySelector('na-login').$.signInText.innerHTML = "Sign In";
 
-				sessionStorage.setItem('currentUserUID', document.querySelector('rrsdas-sad').$.auth.auth.currentUser.uid);
+						sessionStorage.setItem('currentUserUID', document.querySelector('rrsdas-sad').$.auth.auth.currentUser.uid);
 
-				//get database
-				var app = document.getElementById("firebaseApp").app;
-				var database = firebase.database(app);
+						//get database
+						var app = document.getElementById("firebaseApp").app;
+						var database = firebase.database(app);
 
-				//get current user
-				var currentUser = document.querySelector('rrsdas-sad').$.auth.auth.currentUser;
+						//get current user
+						var currentUser = document.querySelector('rrsdas-sad').$.auth.auth.currentUser;
 
-				if (currentUser) {
-				console.log("User is log on");
-				database.ref('/Users/' + currentUser.uid + '/isAdmin').once('value').then(function(snapshot) {
-					var isAdmin = snapshot.val();
-					console.log(isAdmin);
-					if (isAdmin) {
-						document.querySelector('rrsdas-sad').admin = true;
-						document.querySelector('rrsdas-sad').$.fab.hidden = false;
-						document.querySelector('rrsdas-sad').$.itemUsers.hidden = false;
+						if (currentUser) {
+						console.log("User is log on");
+						database.ref('/Users/' + currentUser.uid + '/isAdmin').once('value').then(function(snapshot) {
+							var isAdmin = snapshot.val();
+							console.log(isAdmin);
+							if (isAdmin) {
+								document.querySelector('rrsdas-sad').admin = true;
+								document.querySelector('rrsdas-sad').$.fab.hidden = false;
+								document.querySelector('rrsdas-sad').$.itemUsers.hidden = false;
 
-						document.querySelector('rrsdas-sad').$.auth.auth.onAuthStateChanged(function(user) {
-							if (user.emailVerified) {
-								console.log('Email is verified');
-							}
-							else {
-								console.log('Email is not verified');
+								document.querySelector('rrsdas-sad').$.auth.auth.onAuthStateChanged(function(user) {
+									if (user.emailVerified) {
+										console.log('Email is verified');
+									}
+									else {
+										console.log('Email is not verified');
+									}
+								});
+
+							} else {
+								document.querySelector('rrsdas-sad').admin = false;
+								document.querySelector('rrsdas-sad').$.fab.hidden = true;
+								document.querySelector('rrsdas-sad').$.itemUsers.hidden = true;
 							}
 						});
+						} else {
+							console.log("User is logged out");
+						}
+					})
+					.catch(function(error) {
+						console.log(error.code);
+						console.log(error.message);
 
-					} else {
-						document.querySelector('rrsdas-sad').admin = false;
-						document.querySelector('rrsdas-sad').$.fab.hidden = true;
-						document.querySelector('rrsdas-sad').$.itemUsers.hidden = true;
-					}
-				});
-				} else {
-					console.log("User is logged out");
-				}
-				})
-				.catch(function(error) {
-					console.log(error.code);
-					console.log(error.message);
-
-					var toast = document.getElementById("paper_toast");
-					toast.show(error.message);
-				});
-
+						var toast = document.getElementById("paper_toast");
+						toast.show(error.message);
+						document.querySelector('na-login').$.signInButton.disabled = false;
+						document.querySelector('na-login').$.signInText.innerHTML = "Sign In";
+					});
 			},
 			/*
 				signUp: function() {
