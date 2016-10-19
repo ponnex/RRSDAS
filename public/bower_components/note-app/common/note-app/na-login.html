@@ -261,9 +261,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 	}
 	</style>
 	<paper-material elevation="1">
-		<paper-input id="username" inputValue="{{value}}" label="Username" value="" required auto-validate type="email" disabled={{disableButton}}></paper-input>
-		<iron-a11y-keys id="a11y" target="[[target]]" keys="enter" on-keys-pressed="signIn"></iron-a11y-keys>
-		<paper-input id="password" class="margin-bottom" inputValue="{{value}}" label="Password" value="" required auto-validate error-message="should not be less than 6 characters" type="password" minlength="6" disabled={{disableButton}}></paper-input>
+		<form is="iron-form" id="paperForm">
+			<paper-input id="username" InputValue="{{value}}" label="Username" required auto-validate type="email" disabled={{disableButton}}></paper-input>
+			<iron-a11y-keys id="a11y" target="[[target]]" keys="enter" on-keys-pressed="signIn"></iron-a11y-keys>
+			<paper-input id="password" class="margin-bottom" InputValue="{{value}}" label="Password" required auto-validate error-message="should not be less than 6 characters" type="password" minlength="6" disabled={{disableButton}}></paper-input>
+		</form>
 
 		<paper-button id="signInButton" on-tap="signIn" disabled="[[disabled]]">
 			<iron-icon icon="account-circle"></iron-icon>
@@ -340,9 +342,9 @@ Polymer({
 	},
 
 	signIn: function() {
-		console.log("signing in");
 		this.$.signInButton.disabled = true;
-		this.$.signInText.innerHTML = "Siging In.."
+		this.$.signInText.innerHTML = "Signing In.."
+		this.$.password.autoValidate = false;
 		sessionStorage.setItem('username', this.$.username.value);
 		sessionStorage.setItem('password', this.$.password.value);
 		this.fire('sign-in', null, { bubbles: false });

@@ -117,6 +117,7 @@ Polymer({
 
 	lock: function() {
 		this.fire('sign-out');
+		document.querySelector('na-login').$.password.autoValidate = true;
 	},
 
 	openDrawer: function() {

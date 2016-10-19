@@ -137,13 +137,6 @@
 					</template>
 				</div>-->
 
-				<!--<google-chart
-					type='line'
-					options='{"title": "Stream Flow"}'
-					cols='[{"label":"Month", "type":"string"}, {"label":"Stream", "type":"number"}]'
-					rows='[["Jan", 31],["Feb", 28],["Mar", 31]]'>
-				</google-chart>-->
-
 				<!--<firebase-document
 					id="document"
 					app-name="rrsdas-sad"
@@ -216,10 +209,11 @@
 				this.$.auth.signInWithEmailAndPassword(sessionStorage.getItem('username'), sessionStorage.getItem('password'))
 					.then(function(response) {
 
-						document.querySelector('na-login').$.username.value = "";
-						document.querySelector('na-login').$.password.value = "";
+						document.querySelector('na-login').$.username.value = null;
+						document.querySelector('na-login').$.password.value = null;
 						document.querySelector('na-login').$.username.invalid = false;
 						document.querySelector('na-login').$.password.invalid = false;
+						document.querySelector('na-login').$.paperForm.reset();
 						document.querySelector('na-login').$.signInButton.disabled = false;
 						document.querySelector('na-login').$.signInText.innerHTML = "Sign In";
 
