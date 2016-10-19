@@ -1,0 +1,123 @@
+<link rel="import" href="/bower_components/vaadin-grid/vaadin-grid.html">
+<link rel="import" href="/bower_components/paper-input/paper-input.html">
+<link rel="import" href="/bower_components/paper-button/paper-button.html">
+<dom-module id="na-users">
+  <template>
+  <style>
+    :host {
+      --calculated-paper-toolbar-height: var(--paper-toolbar-height, 64px);
+      --calculated-paper-toolbar-sm-height: var(--paper-toolbar-sm-height, 56px);
+      position: absolute;
+      top: var(--calculated-paper-toolbar-height);
+      left: 0;
+      right: 0;
+      bottom: 0;
+
+      height: auto;
+      width: auto;
+      margin: 2% 2% 2% 2%;
+
+      @apply(--layout-vertical);
+    }
+    @media (max-width: 600px) {
+  		:host {
+  			 top: var(--calculated-paper-toolbar-sm-height);
+  		}
+  	}
+    .add-div {
+      @apply(--layout-horizontal);
+    }
+    #sort {
+      height: 300px;
+      width: 100%;
+    }
+    #email {
+      @apply(--layout-flex);
+    }
+  </style>
+  <div class="add-div">
+    <paper-input id="email" label="Email"></paper-input>
+    <paper-button>
+      <iron-icon icon="icons:add" item-icon prefix></iron-icon>
+    </paper-button>
+  </div>
+  <paper-input id="filter" label="Filter by first name">
+    <iron-icon icon="icons:search" item-icon prefix></iron-icon>
+  </paper-input>
+  <vaadin-grid id="sort" selection-mode="multi">
+  <table>
+    <colgroup>
+      <col name="firstName" sortable/>
+      <col name="lastName" sortable/>
+      <col name="email" sortable/>
+    </colgroup>
+  </table>
+  </vaadin-grid>
+  </template>
+  <script src="https://cdn.vaadin.com/vaadin-core-elements/latest/webcomponentsjs/webcomponents-lite.min.js"></script>
+  <script>
+  (function() {
+    HTMLImports.whenReady(function() {
+      var grid = document.querySelector('#sort');
+      var users = [];
+
+      getJSON('https://demo.vaadin.com/demo-data/1.0/people', function(json) {
+        users = json.result;
+        grid.items = users;
+      });
+
+      grid.addEventListener('sort-order-changed', function() {
+        var sortOrder = grid.sortOrder[0];
+        var sortProperty = grid.columns[sortOrder.column].name;
+        var sortDirection = sortOrder.direction;
+        grid.items.sort(function(a, b) {
+          var res;
+          var path = sortProperty.split('.');
+          for (var i = 0; i < path.length; i++) {
+            a = a[path[i]];
+            b = b[path[i]];
+          }
+          if (!isNaN(a)) {
+            res = parseInt(a, 10) - parseInt(b, 10);
+          } else {
+            res = a.localeCompare(b);
+          }
+
+          if ('desc' === sortDirection) {
+            res *= -1;
+          }
+          return res;
+        });
+      });
+
+      var filterInput = document.querySelector('#filter');
+      filterInput.addEventListener('value-changed', function() {
+        var filterText = filterInput.value.toLowerCase();
+        grid.items = users.filter(function(val) {
+          if (filterText) {
+            return (val.firstName.toLowerCase()).indexOf(filterText) > -1;
+          } else {
+            return true;
+          }
+        });
+      });
+    });
+
+    function getJSON(url, callback) {
+      var xhr = new XMLHttpRequest();
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+          callback(JSON.parse(xhr.responseText));
+        }
+      };
+      xhr.open('GET', url, true);
+      xhr.send();
+    }
+  })();
+</script>
+  <script>
+  Polymer({
+    is: 'na-users'
+  });
+  </script>
+</dom-module>

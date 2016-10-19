@@ -1,0 +1,127 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="/bower_components/polymer/polymer.html">
+<link rel="import" href="/bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="/bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="/bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="/bower_components/app-storage/app-network-status-behavior.html">
+
+<dom-module id="na-toolbar">
+	<template>
+	<style>
+	:host {
+		--calculated-paper-toolbar-height: var(--paper-toolbar-height, 64px);
+		--calculated-paper-toolbar-sm-height: var(--paper-toolbar-sm-height, 56px);
+
+		 /* technical */
+		display: block;
+		box-sizing: border-box;
+		-moz-box-sizing: border-box;
+
+		/* size */
+		height: var(--calculated-paper-toolbar-height);
+
+		@apply(--layout-horizontal);
+		@apply(--layout-center-center);
+		background-color: var(--na-toolbar-color, #515C6B);
+		color: #FFFFFF;
+
+		--paper-icon-button-disabled: {
+			color: #FFFFFF;
+		};
+	}
+
+	h1 {
+		font-size: 20px;
+		margin: 0 0 0 15px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		font-size: 20px;
+		font-weight: 400;
+		line-height: 1;
+		pointer-events: none;
+		@apply(--layout-flex);
+	}
+
+	iron-icon{
+		margin-right: 15px;
+	}
+
+	paper-icon-button {
+		margin-left: 15px;
+		margin-right: 15px;
+	}
+
+	@media (max-height: 600px) {
+		:host {
+			height: var(--calculated-paper-toolbar-sm-height);
+		}
+
+		iron-icon {
+			margin-right: 5px;
+		}
+
+		paper-icon-button {
+			margin-right: 5px;
+		}
+	}
+
+	</style>
+	<paper-icon-button
+		id="buttonMenu"
+		hidden$="[[!signedIn]]"
+		icon="menu"
+		paper-drawer-toggle
+		on-click="openDrawer">
+	</paper-icon-button>
+
+	<h1>RRSDAS</h1>
+
+	<iron-icon icon="cloud" hidden$="[[!online]]"></iron-icon>
+
+	<iron-icon icon="cloud-off" hidden$="[[online]]"></iron-icon>
+
+	<paper-icon-button
+		icon="[[computeLockIcon(signedIn)]]"
+		disabled="[[!signedIn]]"
+		on-tap="lock">
+	</paper-icon-button>
+</template>
+<script>
+Polymer({
+	is: 'na-toolbar',
+
+	behaviors: [
+		Polymer.AppNetworkStatusBehavior
+	],
+
+	properties: {
+		signedIn: {
+			type: Boolean,
+			notify: true,
+			value: false
+		}
+	},
+
+	computeLockIcon: function(signedIn) {
+		return signedIn ? 'lock-open' : 'lock';
+	},
+
+	lock: function() {
+		this.fire('sign-out');
+	},
+
+	openDrawer: function() {
+		document.querySelector('rrsdas-sad').$.drawer.openDrawer();
+	}
+});
+</script>
+</dom-module>

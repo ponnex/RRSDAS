@@ -1,0 +1,71 @@
+<link rel="import" href="/bower_components/google-map/google-map.html">
+
+<dom-module id="na-map">
+  <template>
+  <style>
+    :host {
+      --calculated-paper-toolbar-height: var(--paper-toolbar-height, 64px);
+      --calculated-paper-toolbar-sm-height: var(--paper-toolbar-sm-height, 56px);
+      position: absolute;
+      top: var(--calculated-paper-toolbar-height);
+      left: 0;
+      right: 0;
+      bottom: 0;
+
+
+      height: 100vh;
+      width: 100vw;
+
+      @apply(--layout);
+      @apply(--layout-center-center);
+    }
+    .container{
+      width: 100%;
+      margin: 0 auto;
+    }
+    google-map {
+      display: block;
+      height: 100vh;
+      margin: 0;
+    }
+    .graph-div {
+      height: 100%;
+      width: 100%;
+    }
+    google-chart {
+      display: block;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    @media (max-height: 600px) {
+  		:host {
+  			 top: var(--calculated-paper-toolbar-sm-height);
+  		}
+  	}
+  </style>
+  <div class="container">
+    <google-map latitude="8.4486783" longitude="124.6244256" disable-default-ui zoom="14" fit-to-markers api-key="AIzaSyClmzC471aGG2kq8LSyMeqKYaNdgaUI5HQ">
+      <google-map-marker latitude="8.4486783" longitude="124.6244256" click-events>
+        <div class="graph-div">
+          <google-chart
+            id="chartline1"
+            type='line'
+            options='{"title": "Stream Flow"}'
+            cols='[{"label":"Month", "type":"string"}, {"label":"Stream", "type":"number"}]'
+            rows='[["Jan", 31],["Feb", 28],["Mar", 31]]'>
+          </google-chart>
+        </div>
+      </google-map-marker>
+      <google-map-marker latitude="8.481494" longitude="124.65145" title="Mang Kanor" click-events><h1>Mang Kanor</h1></google-map-marker>
+      <google-map-marker latitude="8.488664" longitude="124.644351" title="Matanglawin" click-events><h1>Matanglawin</h1></google-map-marker>
+    </google-map>
+	</div>
+  </template>
+  <script>
+  Polymer({
+    is: 'na-map'
+  });
+  </script>
+</dom-module>

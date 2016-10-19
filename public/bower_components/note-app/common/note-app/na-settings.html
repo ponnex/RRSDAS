@@ -1,0 +1,36 @@
+<dom-module id="na-settings">
+  <template>
+  <style>
+    :host {
+      --calculated-paper-toolbar-height: var(--paper-toolbar-height, 64px);
+      --calculated-paper-toolbar-sm-height: var(--paper-toolbar-sm-height, 56px);
+      position: absolute;
+      top: var(--calculated-paper-toolbar-height);
+      left: 0;
+      right: 0;
+      bottom: 0;
+      color: #FFFFFF;
+
+      height: 100vh;
+      width: auto;
+
+      @apply(--layout);
+      @apply(--layout-center-center);
+    }
+    h1 {
+      color: #000000;
+    }
+    @media (max-width: 600px) {
+  		:host {
+  			 top: var(--calculated-paper-toolbar-sm-height);
+  		}
+  	}
+  </style>
+    <h1>Settings</h1>
+  </template>
+  <script>
+  Polymer({
+    is: 'na-settings'
+  });
+  </script>
+</dom-module>

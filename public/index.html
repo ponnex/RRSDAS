@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+
+	<title>Remote Rain and Stream Data Acquisition System</title>
+
+	<meta name="description" content="Remote Rain and Stream Data Acquisition System">
+
+		<link rel="icon" sizes="192x192" href="bower_components/note-app/common/images/icon-4x.png">
+
+		<!-- See https://goo.gl/OOhYW5 -->
+		<link rel="manifest" href="/manifest.json">
+
+		<!-- See https://goo.gl/qRE0vM -->
+		<meta name="theme-color" content="#515C6B">
+
+		<!-- Add to homescreen for Chrome on Android. Fallback for manifest.json -->
+		<meta name="mobile-web-app-capable" content="yes">
+		<meta name="application-name" content="Remote Rain and Stream Data Acquisition System">
+
+		<!-- Add to homescreen for Safari on iOS -->
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+		<meta name="apple-mobile-web-app-title" content="Remote Rain and Stream Data Acquisition System">
+
+		<!-- Homescreen icons -->
+		<link rel="apple-touch-icon" href="bower_components/note-app/common/images/icon-4x.png">
+		<link rel="apple-touch-icon" sizes="72x72" href="bower_components/note-app/common/images/icon-1-5x.png">
+		<link rel="apple-touch-icon" sizes="96x96" href="bower_components/note-app/common/images/icon-2x.png">
+		<link rel="apple-touch-icon" sizes="144x144" href="bower_components/note-app/common/images/icon-3x.png">
+		<link rel="apple-touch-icon" sizes="192x192" href="bower_components/note-app/common/images/icon-4x.png">
+
+		<!-- Tile icon for Windows 8 (144x144 + tile color) -->
+		<meta name="msapplication-TileImage" content="/bower_components/note-app/common/images/icon-3x.png">
+		<meta name="msapplication-TileColor" content="#515C6B">
+		<meta name="msapplication-tap-highlight" content="no">
+	<style>
+	body {
+		margin: 0;
+		width: 100%;
+		height: 100%;
+	}
+	</style>
+
+	<script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+	<script src="bower_components/web-animations-js/web-animations.min.js"></script>
+	<script src="bower_components/firebase/firebase.js"></script>
+	<link rel="import" href="bower_components/platinum-sw/platinum-sw-elements.html">
+	<link rel="import" href="bower_components/polymerfire/firebase-app.html">
+	<link rel="import" href="rrsdas-sad.html">
+</head>
+<body>
+<platinum-sw-register
+		auto-register
+		skip-waiting
+		clients-claim
+		reload-on-install
+		href="sw-import.js">
+	<platinum-sw-cache
+			default-cache-strategy="networkFirst">
+	</platinum-sw-cache>
+</platinum-sw-register>
+
+<!-- Configure Firebase app: -->
+<firebase-app
+	id="firebaseApp"
+	name="rrsdas-sad"
+	api-key="AIzaSyBiUBw9rJNFy49xMdypnqaLpkbGRczSpMo"
+	auth-domain="rrsdas-e2420.firebaseapp.com"
+	database-url="https://rrsdas-e2420.firebaseio.com">
+</firebase-app>
+
+<!-- Instantiate rrsdas-sad: -->
+<rrsdas-sad></rrsdas-sad>
+</body>
+</html>

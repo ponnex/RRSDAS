@@ -1,0 +1,348 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="/bower_components/paper-button/paper-button.html">
+<link rel="import" href="/bower_components/paper-input/paper-input.html">
+<link rel="import" href="/bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="/bower_components/paper-material/paper-material.html">
+<link rel="import" href="/bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="/bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="/bower_components/iron-flex-layout/iron-flex-layout.html">
+<dom-module id="na-login">
+	<template>
+	<style>
+	:host {
+		--calculated-paper-toolbar-height: var(--paper-toolbar-height, 64px);
+		--calculated-paper-toolbar-sm-height: var(--paper-toolbar-sm-height, 56px);
+
+		position: absolute;
+		top: var(--calculated-paper-toolbar-height);
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-color: #515C6B;
+		transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		z-index: 2;
+		color: #FFFFFF;
+
+		--paper-icon-button-disabled: {
+			margin: 0 15px 0 0;
+		};
+
+		@apply(--layout);
+		@apply(--layout-center-center);
+	}
+
+	:host([signed-in]) {
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	paper-material {
+		height: auto;
+		width: 40vh;
+		padding: 36px;
+		margin: 16px;
+		border-radius: 5px;
+		background-color: #FFFFFF;
+		color: #757575;
+		@apply(--layout-vertical);
+		@apply(--layout-center-center);
+	}
+
+	iron-icon {
+		margin-right: 0.5em;
+	}
+
+	paper-input {
+		width: 40vh;
+	}
+
+	paper-button {
+		margin: 3px;
+		vertical-align: middle;
+		text-transform: none;
+	}
+
+	@media (max-height: 600px) {
+		:host {
+			 top: var(--calculated-paper-toolbar-sm-height);
+		}
+		paper-input {
+				width: 100%;
+		}
+	}
+
+	.margin-bottom {
+		margin-bottom: 10px;
+	}
+
+	.bg-boxes{
+		/*Set the container for the svg elements to take up the whole window and hide objects outside of the window*/
+		height: 100%;
+		min-height: 240px;
+		position: absolute;
+		overflow: hidden;
+		width: 100%;
+		z-index: -1;
+	}
+
+	svg{
+		/*Set defaults for svg columns. Opacity set to 0 so the elements are invisible before the animation begins and will not show up on browsers without animation*/
+		-webkit-animation: riser 20s infinite;
+		animation: riser 20s infinite;
+		opacity: 0;
+		overflow: hidden;
+		position: absolute;
+	}
+
+	.bubble{
+		/*Set the defaults for the "bubbles". transform-origin should always be the center-point of the object including blank-space within the svg. Since the object should be centered, this is equal to the width of the object. The default bubble is 100px by 100px in an svg object with a width of 200px*/
+		-webkit-animation: rotator 20s linear infinite;
+		animation: rotator 20s linear infinite;
+		fill: #FFF;
+		-webkit-transform-origin: 100px 100px;
+		transform-origin: 100px 100px;
+	}
+	#col1{
+		/*Since this element is larger than the set default, I want it to rise a little faster to give a subtle sense of depth*/
+		-webkit-animation-duration: 15s;
+		animation-duration: 15s;
+	}
+	#bub1{
+		/*The transform-origin has to be redefined because this bubble is not the set default size*/
+		-webkit-transform-origin: 150px 150px;
+		transform-origin: 150px 150px;
+	}
+
+	col2{
+		/*To offset the columns, adjust their left attribute and add an animation-delay*/
+		left: 15%;
+		-webkit-animation-delay: 18s;
+		animation-delay: 18s;
+	}
+
+	#col3{
+		left: 30%;
+		-webkit-animation-delay: 14s;
+		animation-delay: 14s;
+		-webkit-animation-duration: 17s;
+		animation-duration: 17s;
+	}
+
+	#bub3{
+		-webkit-animation-delay: 14s;
+		animation-delay: 14s;
+		-webkit-transform-origin: 130px 130px;
+		transform-origin: 130px 130px;
+	}
+
+	#col4{
+		left: 45%;
+		-webkit-animation-delay: 8s;
+		animation-delay: 8s;
+		-webkit-animation-duration: 22s;
+		animation-duration: 22s;
+	}
+
+	#bub4{
+		-webkit-animation-delay: 8s;
+		animation-delay: 8s;
+		-webkit-transform-origin: 80px 80px;
+		transform-origin: 80px 80px;
+	}
+
+	#col5{
+		left: 60%;
+		-webkit-animation-delay: 15s;
+		animation-delay: 15s;
+		-webkit-animation-duration: 18s;
+		animation-duration: 18s;
+	}
+
+	#bub5{
+		-webkit-animation-delay: 15s;
+		animation-delay: 15s;
+		-webkit-transform-origin: 120px 120px;
+		transform-origin: 120px 120px;
+	}
+
+	#col6{
+		left: 75%;
+		-webkit-animation-delay: 19s;
+		animation-delay: 19s;
+	}
+
+	#col7{
+		left: 90%;
+		-webkit-animation-delay: 4s;
+		animation-delay: 4s;
+	}
+
+	#col8{
+		left: -5%;
+		-webkit-animation-delay: 11s;
+		animation-delay: 11s;
+	}
+
+	#col9{
+		left: 25%;
+		-webkit-animation-delay: 5s;
+		animation-delay: 5s;
+	}
+
+	#col10{
+		left: 50%;
+		-webkit-animation-delay: 12s;
+		animation-delay: 12s;
+	}
+
+	#col11{
+		left: 67%;
+		-webkit-animation-delay: 1s;
+		animation-delay: 1s;
+		-webkit-animation-duration: 25s;
+		animation-duration: 25s;
+	}
+
+	#bub11{
+		-webkit-animation-delay: 1s;
+		animation-delay: 1s;
+		-webkit-transform-origin: 50px 50px;
+		transform-origin: 50px 50px;
+	}
+
+	/*Rotation Animation - Should be set to a factor of 360 to prevent jumpiness*/
+	@-webkit-keyframes rotator{
+		to{
+			-webkit-transform: rotate(360deg);
+			transform: rotate(360deg);
+		}
+	}
+
+	@keyframes rotator{
+		to{
+			-webkit-transform: rotate(360deg);
+			transform: rotate(360deg);
+		}
+	}
+
+	@-webkit-keyframes riser{
+		0%{
+			opacity: 0.2;
+			-webkit-transform: translateY(100%);
+			transform: translateY(100%);
+		}
+		100%{
+			opacity: 0.2;
+			-webkit-transform: translateY(-250px);
+			transform: translateY(-250px);
+		}
+	}
+
+	@keyframes riser{
+		0%{
+			opacity: 0.2;
+			-webkit-transform: translateY(100%);
+			transform: translateY(100%);
+		}
+		100%{
+			opacity: 0.2;
+			-webkit-transform: translateY(-250px);
+			transform: translateY(-250px);
+		}
+	}
+	</style>
+	<paper-material elevation="1">
+		<paper-input id="username" inputValue="{{value}}" label="Username" value="" required auto-validate type="email" disabled={{disableButton}}></paper-input>
+		<paper-input id="password" class="margin-bottom" inputValue="{{value}}" label="Password" value="" required auto-validate error-message="should not be less than 6 characters" type="password" minlength="6" disabled={{disableButton}}></paper-input>
+
+		<paper-button on-tap="signIn" disabled="[[disabled]]">
+			<iron-icon icon="account-circle"></iron-icon>
+			<span>Sign In</span>
+		</paper-button>
+
+	<!--
+		<paper-button on-tap="signUp" disabled="[[disabled]]" type="submit">
+			<iron-icon icon="account-circle"></iron-icon>
+			<span>Sign Up</span>
+		</paper-button>
+	-->
+	</paper-material>
+
+	<div class="bg-boxes">
+		<svg width="300px" height="100%" id="col1">
+			<rect width="150px" height="150px" x="75px" y="75px" class="bubble" id="bub1" />
+		</svg>
+		<svg width="200px" height="100%" id="col2">
+			<rect width="100px" height="100px" x="50px" y="50px" class="bubble" id="bub2" />
+		</svg>
+		<svg width="260px" height="100%" id="col3">
+			<rect width="130px" height="130px" x="65px" y="65px" class="bubble" id="bub3" />
+		</svg>
+		<svg width="160px" height="100%" id="col4">
+			<rect width="80px" height="80px" x="40px" y="40px" class="bubble" id="bub4" />
+		</svg>
+		<svg width="240px" height="100%" id="col5">
+			<rect width="120px" height="120px" x="60px" y="60px" class="bubble" id="bub5" />
+		</svg>
+		<!--Here is a triangle-->
+		<svg width="200px" height="100%" id="col6">
+			<polygon points="50,150 100,50 150,150" class="bubble" id="bub6" />
+		</svg>
+		<svg width="200px" height="100%" id="col7">
+			<rect width="100px" height="100px" x="50px" y="50px" class="bubble" id="bub7" />
+		</svg>
+		<svg width="200px" height="100%" id="col8">
+			<rect width="100px" height="100px" x="50px" y="50px" class="bubble" id="bub8" />
+		</svg>
+		<svg width="200px" height="100%" id="col9">
+			<rect width="100px" height="100px" x="50px" y="50px" class="bubble" id="bub9" />
+		</svg>
+		<svg width="200px" height="100%" id="col10">
+			<rect width="100px" height="100px" x="50px" y="50px" class="bubble" id="bub10" />
+		</svg>
+		<svg width="100px" height="100%" id="col11">
+			<rect width="50px" height="50px" x="25px" y="25px" class="bubble" id="bub11" />
+		</svg>
+	</div>
+</template>
+
+<script>
+Polymer({
+	is: 'na-login',
+
+	properties: {
+		disabled: {
+			type: Boolean,
+			reflectToAttribute: true,
+			value: false
+		},
+
+		signedIn: {
+			type: Boolean,
+			reflectToAttribute: true,
+			value: false
+		}
+	},
+
+	signIn: function() {
+		sessionStorage.setItem('username', this.$.username.value);
+		sessionStorage.setItem('password', this.$.password.value);
+		this.fire('sign-in', null, { bubbles: false });
+	},
+
+	signUp: function() {
+		sessionStorage.setItem('username', this.$.username.value);
+		sessionStorage.setItem('password', this.$.password.value);
+		this.fire('sign-up', null, { bubbles: false });
+	}
+});
+</script>
+</dom-module>

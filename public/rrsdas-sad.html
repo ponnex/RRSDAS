@@ -1,0 +1,305 @@
+<link rel="import" href="bower_components/note-app/common/note-app/na-elements.html">
+<link rel="import" href="bower_components/app-storage/app-indexeddb-mirror/app-indexeddb-mirror.html">
+<link rel="import" href="bower_components/polymerfire/polymerfire.html">
+<link rel="import" href="bower_components/paper-drawer-panel/paper-drawer-panel.html">
+<link rel="import" href="bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="bower_components/iron-icons/hardware-icons.html">
+<link rel="import" href="bower_components/iron-icons/social-icons.html">
+<link rel="import" href="bower_components/iron-icons/maps-icons.html">
+<link rel="import" href="bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="bower_components/iron-resizable-behavior/iron-resizable-behavior.html">
+<link rel="import" href="bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="bower_components/google-chart/google-chart.html">
+
+<dom-module id="rrsdas-sad">
+	<template>
+		<style include="note-app-shared-styles"></style>
+
+		<!-- import classes in an element -->
+		<style include="iron-flex iron-flex-alignment"></style>
+		<style>
+			.container {
+				@apply(--layout-vertical);
+			}
+			.flexchild {
+				@apply(--layout-flex);
+			}
+			.bottom {
+				position: absolute;
+				left: 0;
+				bottom: 0;
+				right: 0;
+			}
+			h1 {
+		  	font-size: 20px;
+				margin: 15px 15px 5px 15px;
+				font-weight: 400;
+			}
+			google-chart {
+		  	width: auto;
+				height: 85vh;
+				margin: 15px 15px 15px 15px;
+				@apply(--layout-vertical);
+				@apply(--layout-center-center);
+			}
+			paper-fab {
+				z-index: 1;
+			}
+			paper-toolbar {
+				--paper-toolbar-background: #515C6B;
+			}
+		</style>
+		<paper-drawer-panel edge-swipe-sensitivity="15" force-narrow id="drawer" disable-swipe="[[!signedIn]]">
+
+			<paper-header-panel drawer id="drawer" class=container>
+				<paper-toolbar>
+					<div class="title">Menu</div>
+				</paper-toolbar>
+
+				<paper-listbox id="menuListbox" selected="0" on-iron-select="onItemSelected" class=flexchild>
+					<paper-icon-item>
+					<iron-icon icon="icons:timeline" item-icon></iron-icon>
+					Overview
+					</paper-icon-item>
+					<paper-icon-item>
+					<iron-icon icon="hardware:memory" item-icon></iron-icon>
+					Modules
+					</paper-icon-item>
+					<paper-icon-item>
+					<iron-icon icon="maps:map" item-icon></iron-icon>
+					Map
+					</paper-icon-item>
+					<paper-icon-item id="itemUsers"
+						hidden=true>
+					<iron-icon icon="social:person" item-icon></iron-icon>
+					Users
+					</paper-icon-item>
+
+					<paper-icon-item class="bottom">
+						<iron-icon icon="icons:settings" item-icon></iron-icon>
+							Settings
+					</paper-icon-item>
+					<!-- Settings should pop up as a diaglog not a page -->
+				</paper-listbox>
+
+			</paper-header-panel>
+
+			<paper-header-panel main>
+
+				<na-toolbar
+					elevation="1"
+					signed-in="[[signedIn]]"
+					on-sign-out="signOut">
+				</na-toolbar>
+
+				<iron-pages id="pages" selected="0">
+					<na-overview></na-overview>
+				  <na-modules></na-modules>
+					<na-map></na-map>
+					<na-users></na-users>
+					<na-settings></na-settings>
+				</iron-pages>
+
+				<na-login
+					on-sign-in="signIn"
+					on-sign-up="signUp"
+					signed-in="[[signedIn]]"
+					disabled="[[!online]]">
+				</na-login>
+
+				<!--<na-editor
+					id="editor"
+					note="{{editableNote}}"
+					on-close="commitChange">
+				</na-editor>-->
+
+				<paper-fab
+					id="fab"
+					icon="add"
+					on-tap="create"
+					disabled="[[!online]]"
+					hidden=true
+					aria-label="Add note">
+				</paper-fab>
+
+				<!--<div class="notes">
+					<template is="dom-repeat" items="[[persistedNotes]]" as="note">
+					<na-note
+						id$="[[note.name]]"
+						title="[[note.email]]"
+						body="[[note.isAdmin]]"
+						on-tap="edit">
+					</na-note>
+					</template>
+				</div>-->
+
+				<!--<google-chart
+					type='line'
+					options='{"title": "Stream Flow"}'
+					cols='[{"label":"Month", "type":"string"}, {"label":"Stream", "type":"number"}]'
+					rows='[["Jan", 31],["Feb", 28],["Mar", 31]]'>
+				</google-chart>-->
+
+				<!--<firebase-document
+					id="document"
+					app-name="rrsdas-sad"
+					path="[[editableNoteId]]"
+					data="{{editableNote}}">
+				</firebase-document>-->
+
+				<!--<firebase-query
+					id="query"
+					app-name="rrsdas-sad"
+					path="/Users/[[user.uid]]"
+					data="{{data}}">
+				</firebase-query>-->
+
+				<firebase-auth
+					id="auth"
+					app-name="rrsdas-sad"
+					provider="password"
+					signed-in="{{signedIn}}"
+					user="{{user}}">
+				</firebase-auth>
+
+				<!--<app-indexeddb-mirror
+					session="[[user.uid]]"
+					key="rrsdas-sad"
+					data="{{data}}"
+					persisted-data="{{persistedNotes}}">
+				</app-indexeddb-mirror>-->
+
+				<paper-toast id="paper_toast" alwaysOnTop="true"></paper-toast>
+
+			</paper-header-panel>
+		</paper-drawer-panel>
+
+	</template>
+	<script>
+		Polymer({
+			is: 'rrsdas-sad',
+			behaviors: [
+				Polymer.NoteAppBehavior,
+			],
+			ready: function() {
+				console.log("READY");
+
+				//get database
+				var app = document.getElementById("firebaseApp").app;
+				var database = firebase.database(app);
+				console.log(sessionStorage.getItem('currentUserUID'));
+
+				if (sessionStorage.getItem('currentUserUID')) {
+					console.log("User is log on");
+					database.ref('/Users/' + sessionStorage.getItem('currentUserUID') + '/isAdmin').on('value', function(snapshot) {
+						var isAdmin = snapshot.val();
+						console.log(isAdmin);
+						if (isAdmin) {
+							document.querySelector('rrsdas-sad').admin = true;
+							document.querySelector('rrsdas-sad').$.fab.hidden = false;
+							document.querySelector('rrsdas-sad').$.itemUsers.hidden = false;
+						} else {
+							document.querySelector('rrsdas-sad').admin = false;
+							document.querySelector('rrsdas-sad').$.fab.hidden = true;
+							document.querySelector('rrsdas-sad').$.itemUsers.hidden = true;
+						}
+					});
+				} else {
+						console.log("User is logged out");
+				}
+			},
+			signIn: function() {
+				this.$.auth.signInWithEmailAndPassword(sessionStorage.getItem('username'), sessionStorage.getItem('password'))
+				.then(function(response) {
+
+				document.querySelector('na-login').$.username.value = "";
+				document.querySelector('na-login').$.password.value = "";
+
+				sessionStorage.setItem('currentUserUID', document.querySelector('rrsdas-sad').$.auth.auth.currentUser.uid);
+
+				//get database
+				var app = document.getElementById("firebaseApp").app;
+				var database = firebase.database(app);
+
+				//get current user
+				var currentUser = document.querySelector('rrsdas-sad').$.auth.auth.currentUser;
+
+				if (currentUser) {
+				console.log("User is log on");
+				database.ref('/Users/' + currentUser.uid + '/isAdmin').once('value').then(function(snapshot) {
+					var isAdmin = snapshot.val();
+					console.log(isAdmin);
+					if (isAdmin) {
+						document.querySelector('rrsdas-sad').admin = true;
+						document.querySelector('rrsdas-sad').$.fab.hidden = false;
+						document.querySelector('rrsdas-sad').$.itemUsers.hidden = false;
+
+						document.querySelector('rrsdas-sad').$.auth.auth.onAuthStateChanged(function(user) {
+							if (user.emailVerified) {
+								console.log('Email is verified');
+							}
+							else {
+								console.log('Email is not verified');
+							}
+						});
+
+					} else {
+						document.querySelector('rrsdas-sad').admin = false;
+						document.querySelector('rrsdas-sad').$.fab.hidden = true;
+						document.querySelector('rrsdas-sad').$.itemUsers.hidden = true;
+					}
+				});
+				} else {
+					console.log("User is logged out");
+				}
+				})
+				.catch(function(error) {
+					console.log(error.code);
+					console.log(error.message);
+
+					var toast = document.getElementById("paper_toast");
+					toast.show(error.message);
+				});
+
+			},
+			/*
+				signUp: function() {
+					this.$.auth.createUserWithEmailAndPassword(sessionStorage.getItem('username'), sessionStorage.getItem('password'))
+					.then(function(response) {
+						console.log(response);
+				//get current user
+
+				firebase.auth().onAuthStateChanged(function(user) {
+					user.sendEmailVerification();
+				});
+					})
+					.catch(function(error) {
+						console.log(error.code);
+						console.log(error.message);
+
+						var toast = document.getElementById("paper_toast");
+						toast.show(error.message);
+					});
+				}, */
+
+			get usersPath() {
+				return '/Users/' + this.user.uid;
+			},
+
+			toEditableId: function() {
+				return this.usersPath;
+			},
+
+			onItemSelected: function() {
+				this.$.pages.selectIndex(this.$.menuListbox.selected);
+				this.$.drawer.closeDrawer();
+			}
+
+		});
+
+	</script>
+</dom-module>
