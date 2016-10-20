@@ -1,10 +1,6 @@
-<link rel="import" href="/bower_components/paper-date-picker/paper-date-picker.html">
-<link rel="import" href="/bower_components/paper-dialog/paper-dialog.html">
-<link rel="import" href="/bower_components/iron-icon/iron-icon.html">
-<link rel="import" href="/bower_components/iron-icons/iron-icons.html">
-<link rel="import" href="/bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="/bower_components/neon-animation/animations/fade-out-animation.html">
-<link rel="import" href="/bower_components/iron-resizable-behavior/iron-resizable-behavior.html">
+<link rel="import" href="/bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="/bower_components/paper-tabs/paper-tab.html">
+<link rel="import" href="/bower_components/iron-pages/iron-pages.html">
 
 <dom-module id="na-overview">
   <template>
@@ -23,43 +19,18 @@
       height: auto;
       width: auto;
 
-      margin: 0 2% 2% 2%;
       @apply(--layout-vertical);
     }
-    .container {
-      @apply(--layout-horizontal);
-      height: 100%;
-      margin-top: 2%;
-    }
-    .pickercontainer {
-      @apply(--layout-horizontal);
-    }
-    .graph-div {
-      height: auto;
-      width: 68%;
-      padding-right: 2%;
-    }
-    .modules-summary-div {
-      height: auto;
-      width: 30%;
+
+    paper-toolbar {
+      --paper-toolbar-background: #515C6B;
     }
 
-    iron-icon {
-      --iron-icon-fill-color: #515C6B;
-    }
-
-    paper-date-picker {
-      --default-primary-color: #515C6B;
-    }
-
-    paper-input {
-      --paper-input-container-focus-color: #515C6B;
-      padding-left: 2%;
-    }
-
-    google-chart {
-      height: 100%;
-      width: 100%;
+    paper-tabs {
+      background-color: #515C6B;
+      --paper-tabs-selection-bar-color: #FFFFFF;
+      font-weight: 400;
+    	line-height: 1;
     }
 
     @media (max-height: 600px) {
@@ -69,84 +40,22 @@
   	}
   </style>
 
-  <paper-dialog id="datePickerDialog" class="paper-date-picker-dialog" with-backdrop
-    on-iron-overlay-closed="dialogClosed">
-    <paper-date-picker id="picker" date="{{date}}"></paper-date-picker>
-    <!--<div class="buttons">
-      <paper-button dialog-dismiss>Cancel</paper-button>
-      <paper-button dialog-confirm>OK</paper-button>
-    </div>-->
-  </paper-dialog>
+  <paper-tabs id="paperTabs" selected="0" on-iron-select="onItemSelected" fit-container>
+    <paper-tab>STREAM FLOW</paper-tab>
+    <paper-tab>RAIN FLOW</paper-tab>
+  </paper-tabs>
 
-  <paper-dialog id="timePickerDialog" class="paper-date-picker-dialog" with-backdrop
-    on-iron-overlay-closed="dialogClosed">
-    <paper-date-picker id="picker" date="{{time}}" responsive-width="600px"></paper-date-picker>
-    <!--<div class="buttons">
-      <paper-button dialog-dismiss>Cancel</paper-button>
-      <paper-button dialog-confirm>OK</paper-button>
-    </div>-->
-  </paper-dialog>
-
-  <div id="pickercontainer" class="pickercontainer">
-
-    <paper-input id="dateInput" onclick="datePickerDialog.open()" value="[[dateFormat(date, 'LL')]]" label="Start" name="[[name]]">
-      <iron-icon icon="icons:event" item-icon prefix>
-      </iron-icon>
-      <iron-icon icon="icons:arrow-drop-down" item-icon suffix>
-      </iron-icon>
-    </paper-input>
-
-    <paper-input id="timeInput" onclick="timePickerDialog.open()" value="[[dateFormat(time, 'LL')]]" label="End" name="[[name]]">
-      <iron-icon icon="icons:event" item-icon prefix>
-      </iron-icon>
-      <iron-icon icon="icons:arrow-drop-down" item-icon suffix>
-      </iron-icon>
-    </paper-input>
-  </div>
-
-  <div id="container" class="container">
-    <div class="graph-div">
-      <google-chart
-        id="chartline1"
-        type='line'
-        options='{"title": "Stream Flow"}'
-        cols='[{"label":"Month", "type":"string"}, {"label":"Stream", "type":"number"}]'
-        rows='[["Jan", 31],["Feb", 28],["Mar", 31]]'>
-      </google-chart>
-    </div>
-    <div class="modules-summary-div">
-      <google-chart
-        id="chartline2"
-        type='line'
-        options='{"title": "Stream Flow"}'
-        cols='[{"label":"Month", "type":"string"}, {"label":"Stream", "type":"number"}]'
-        rows='[["Jan", 31],["Feb", 28],["Mar", 31]]'>
-      </google-chart>
-    </div>
-  </div>
+  <iron-pages id="overviewPages" selected="0">
+    <na-streamflow></na-streamflow>
+    <na-rainflow></na-rainflow>
+  </iron-pages>
 
   </template>
   <script>
   Polymer({
     is: 'na-overview',
-    behaviors: [
-      Polymer.IronResizableBehavior
-    ],
-    listeners: {
-      'iron-resize': '_onIronResize'
-    },
-    attached: function() {
-      this.async(this.notifyResize, 1);
-    },
-    _onIronResize: function() {
-      this.$.chartline1.redraw();
-      this.$.chartline2.redraw();
-    },
-    dialogClosed: function() {
-      console.log("dialog closed");
-    },
-    dateFormat: function(date, format) {
-      return moment(date).format(format);
+    onItemSelected: function() {
+      this.$.overviewPages.selectIndex(this.$.paperTabs.selected);
     }
   });
   </script>
