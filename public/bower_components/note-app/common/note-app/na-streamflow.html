@@ -72,7 +72,7 @@
   	}
   </style>
 
-  <paper-dialog id="datePickerDialog" style="margin: 15px 15px 15px 15px" class="paper-date-picker-dialog" with-backdrop
+  <paper-dialog id="dateDialog" style="margin: 15px 15px 15px 15px" class="paper-date-picker-dialog" with-backdrop
     on-iron-overlay-closed="dialogClosed">
     <paper-date-picker id="picker" date="{{date}}"></paper-date-picker>
     <!--<div class="buttons">
@@ -81,7 +81,7 @@
     </div>-->
   </paper-dialog>
 
-  <paper-dialog id="timePickerDialog" style="margin: 15px 15px 15px 15px" class="paper-date-picker-dialog" with-backdrop
+  <paper-dialog id="timeDialog" style="margin: 15px 15px 15px 15px" class="paper-date-picker-dialog" with-backdrop
     on-iron-overlay-closed="dialogClosed">
     <paper-date-picker id="picker" date="{{time}}" responsive-width="600px"></paper-date-picker>
     <!--<div class="buttons">
@@ -92,14 +92,14 @@
 
   <div id="pickercontainer" class="pickercontainer">
 
-    <paper-input id="dateInput" onclick="datePickerDialog.open()" value="[[dateFormat(date, 'LL')]]" label="Start" name="[[name]]">
+    <paper-input id="dateInput" onclick="dateDialog.open()" value="[[dateFormat(date, 'LL')]]" label="Start" name="[[name]]">
       <iron-icon icon="icons:event" item-icon prefix>
       </iron-icon>
       <iron-icon icon="icons:arrow-drop-down" item-icon suffix>
       </iron-icon>
     </paper-input>
 
-    <paper-input id="timeInput" onclick="timePickerDialog.open()" value="[[dateFormat(time, 'LL')]]" label="End" name="[[name]]">
+    <paper-input id="timeInput" onclick="timeDialog.open()" value="[[dateFormat(time, 'LL')]]" label="End" name="[[name]]">
       <iron-icon icon="icons:event" item-icon prefix>
       </iron-icon>
       <iron-icon icon="icons:arrow-drop-down" item-icon suffix>
