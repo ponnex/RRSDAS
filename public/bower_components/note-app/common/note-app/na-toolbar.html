@@ -118,6 +118,7 @@ Polymer({
 	lock: function() {
 		this.fire('sign-out');
 		document.querySelector('na-login').$.password.autoValidate = true;
+    document.querySelector('rrsdas-sad').$.pages.selectIndex(0);
 	},
 
 	openDrawer: function() {
