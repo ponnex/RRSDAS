@@ -120,7 +120,7 @@
 				<paper-fab
 					id="fab"
 					icon="add"
-					on-tap="create"
+					on-tap="fabAction"
 					disabled="[[!online]]"
 					hidden=true
 					aria-label="Add note">
@@ -233,7 +233,7 @@
 							console.log(isAdmin);
 							if (isAdmin) {
 								document.querySelector('rrsdas-sad').admin = true;
-								document.querySelector('rrsdas-sad').$.fab.hidden = false;
+								//document.querySelector('rrsdas-sad').$.fab.hidden = false;
 								document.querySelector('rrsdas-sad').$.itemUsers.hidden = false;
 
 								document.querySelector('rrsdas-sad').$.auth.auth.onAuthStateChanged(function(user) {
@@ -341,8 +341,30 @@
 			},
 
 			onItemSelected: function() {
+
+				if (document.querySelector('rrsdas-sad').admin == true) {
+					if (this.$.menuListbox.selected != 1 && this.$.menuListbox.selected != 3) {
+						document.querySelector('rrsdas-sad').$.fab.hidden = true;
+					} else {
+						document.querySelector('rrsdas-sad').$.fab.hidden = false;
+					}
+				}
+
 				this.$.pages.selectIndex(this.$.menuListbox.selected);
 				this.$.drawer.closeDrawer();
+			},
+			fabAction: function() {
+				if (this.$.menuListbox.selected == 1) {
+					console.log("Modules!");
+				} else {
+					console.log("Users!");
+					console.log(document.querySelector('na-users').addselector);
+					if (document.querySelector('na-users').addselector) {
+						document.querySelector('na-users').$.modal.open();
+					} else {
+						console.log("deleting...");
+					}
+				}
 			}
 
 		});

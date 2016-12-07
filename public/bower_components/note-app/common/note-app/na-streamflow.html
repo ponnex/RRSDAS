@@ -136,7 +136,8 @@
       Polymer.IronResizableBehavior
     ],
     listeners: {
-      'iron-resize': '_onIronResize'
+      'iron-resize': '_onIronResize',
+      'google-chart-ready': '_onChartReady'
     },
     attached: function() {
       this.async(this.notifyResize, 1);
@@ -150,6 +151,14 @@
     },
     dateFormat: function(date, format) {
       return moment(date).format(format);
+    },
+    _onChartReady: function() {
+      var app = document.getElementById("firebaseApp").app;
+      var database = firebase.database(app);
+      database.ref('/modules/').once('value').then(function(snapshot) {
+        var a = snapshot.numChildren();
+        console.log(a);
+      });
     }
   });
   </script>
