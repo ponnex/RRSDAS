@@ -72,18 +72,18 @@
   	}
   </style>
 
-  <paper-dialog id="datePickerDialog" style="margin: 15px 15px 15px 15px" class="paper-date-picker-dialog" with-backdrop
-    on-iron-overlay-closed="dialogClosed">
-    <paper-date-picker id="picker" date="{{date}}"></paper-date-picker>
+  <paper-dialog id="rainStartDialog" style="margin: 15px 15px 15px 15px" class="paper-date-picker-dialog" with-backdrop
+    on-iron-overlay-closed="rainStartDialogClosed">
+    <paper-date-picker id="startPicker" date="{{startDate}}"></paper-date-picker>
     <!--<div class="buttons">
       <paper-button dialog-dismiss>Cancel</paper-button>
       <paper-button dialog-confirm>OK</paper-button>
     </div>-->
   </paper-dialog>
 
-  <paper-dialog id="timePickerDialog" style="margin: 15px 15px 15px 15px" class="paper-date-picker-dialog" with-backdrop
-    on-iron-overlay-closed="dialogClosed">
-    <paper-date-picker id="picker" date="{{time}}" responsive-width="600px"></paper-date-picker>
+  <paper-dialog id="rainEndDialog" style="margin: 15px 15px 15px 15px" class="paper-date-picker-dialog" with-backdrop
+    on-iron-overlay-closed="rainEndDialogClosed">
+    <paper-date-picker id="endPicker" date="{{endDate}}" responsive-width="600px"></paper-date-picker>
     <!--<div class="buttons">
       <paper-button dialog-dismiss>Cancel</paper-button>
       <paper-button dialog-confirm>OK</paper-button>
@@ -92,14 +92,15 @@
 
   <div id="pickercontainer" class="pickercontainer">
 
-    <paper-input id="dateInput" onclick="datePickerDialog.open()" value="[[dateFormat(date, 'LL')]]" label="Start" name="[[name]]">
+    <paper-input id="startInput" onclick="rainStartDialog.open()" value="[[dateFormat(startDate, 'LL')]]" label="Start" name="[[name]]">
+    <!--<paper-input id="startInput" onclick="dateDialog.open()" value="[[dateFormat(date, 'LL')]]" label="Start" name="[[name]]">-->
       <iron-icon icon="icons:event" item-icon prefix>
       </iron-icon>
       <iron-icon icon="icons:arrow-drop-down" item-icon suffix>
       </iron-icon>
     </paper-input>
 
-    <paper-input id="timeInput" onclick="timePickerDialog.open()" value="[[dateFormat(time, 'LL')]]" label="End" name="[[name]]">
+    <paper-input id="endInput" onclick="rainEndDialog.open()" value="[[dateFormat(endDate, 'LL')]]" label="End" name="[[name]]">
       <iron-icon icon="icons:event" item-icon prefix>
       </iron-icon>
       <iron-icon icon="icons:arrow-drop-down" item-icon suffix>
@@ -110,11 +111,11 @@
   <div id="container" class="container">
     <div class="graph-div">
       <google-chart
-        id="chartline1"
+        id="rainflow"
         type='line'
         options='{"title": "Rain Flow"}'
-        cols='[{"label":"Month", "type":"string"}, {"label":"Stream", "type":"number"}]'
-        rows='[["Jan", 35],["Feb", 29],["Mar", 31]]'>
+        cols='[{"label":"Day", "type":"string"}, {"label":"Average", "type":"number"}]'
+        rows='[["Monday", 32],["Tuesday", 52],["Wednesday", 82]]'>
       </google-chart>
     </div>
     <div class="modules-summary-div">
@@ -122,8 +123,8 @@
         id="chartline2"
         type='line'
         options='{"title": "Rain Flow"}'
-        cols='[{"label":"Month", "type":"string"}, {"label":"Stream", "type":"number"}]'
-        rows='[["Jan", 52],["Feb", 5],["Mar", 16]]'>
+        cols='[{"label":"Hour", "type":"number"}, {"label":"M1", "type":"number"}, {"label":"M2", "type":"number"}]'
+        rows='[[11, 31, 35],[12, 28, 24],[1, 31, 30]]'>
       </google-chart>
     </div>
   </div>
@@ -134,22 +135,85 @@
     is: 'na-rainflow',
     behaviors: [
       Polymer.IronResizableBehavior
-    ],
+    ],properties: {
+      isFirstTime: {
+        type: Boolean,
+        value: true
+      }
+    },
     listeners: {
-      'iron-resize': '_onIronResize'
+      'iron-resize': '_onIronResize',
+      'google-chart-ready': '_onChartReady'
+    },
+    ready: function() {
+      this.$.startInput.value = moment(moment().subtract(1, 'month').calendar()).format('LL');
+    },
+    test: function() {
+
     },
     attached: function() {
       this.async(this.notifyResize, 1);
     },
     _onIronResize: function() {
-      this.$.chartline1.redraw();
+      this.$.rainflow.redraw();
       this.$.chartline2.redraw();
     },
-    dialogClosed: function() {
-      console.log("dialog closed");
-    },
     dateFormat: function(date, format) {
+
+      if (this.isFirstTime) {
+        var prevMM = moment(moment().subtract(1, 'month').calendar());
+        var start = moment(prevMM).format('YYYY') + moment(prevMM).format('MM') + moment(prevMM).format('DD') + "00";
+        var end = moment(this.endDate).format('YYYY') + moment(this.endDate).format('MM') + moment(this.endDate).format('DD') + "23";
+        this.isFirstTime = false;
+      } else {
+        var start = moment(this.startDate).format('YYYY') + moment(this.startDate).format('MM') + moment(this.startDate).format('DD') + "00";
+        var end = moment(this.endDate).format('YYYY') + moment(this.endDate).format('MM') + moment(this.endDate).format('DD') + "23";
+      }
+
+      var app = document.getElementById("firebaseApp").app;
+      var database = firebase.database(app);
+
+      var rain = [];
+      var childCounter = 0;
+      var rainCounter = 0;
+      var addition = 0;
+
+      database.ref('/Modules/Data/').orderByKey().startAt(start).endAt(end).on('child_added', function(snapshot) {
+        var day = moment(snapshot.key).format('dddd');
+
+        snapshot.forEach(function(childSnapshot) {
+          addition = addition + childSnapshot.child('rainflow').val();
+          childCounter++;
+        });
+
+        var average = addition / childCounter;
+        var data = [day, average];
+        //console.log(data);
+
+        rain[rainCounter] = data;
+        rainCounter++;
+
+        childCounter = 0;
+        addition = 0;
+        average = 0;
+
+        document.getElementById("rainflow").rows = rain;
+      });
+      rainCounter = 0;
+
+      this.$.rainStartDialog.close();
+      this.$.rainEndDialog.close();
+
       return moment(date).format(format);
+    },
+    _onChartReady: function() {
+
+    },
+    rainStartDialogClosed: function() {
+
+    },
+    rainEndDialogClosed: function() {
+
     }
   });
   </script>

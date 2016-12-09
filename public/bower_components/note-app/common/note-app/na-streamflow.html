@@ -72,8 +72,8 @@
   	}
   </style>
 
-  <paper-dialog id="startDialog" style="margin: 15px 15px 15px 15px" class="paper-date-picker-dialog" with-backdrop
-    on-iron-overlay-closed="startDialogClosed">
+  <paper-dialog id="strmStartDialog" style="margin: 15px 15px 15px 15px" class="paper-date-picker-dialog" with-backdrop
+    on-iron-overlay-closed="strmStartDialogClosed">
     <paper-date-picker id="startPicker" date="{{startDate}}"></paper-date-picker>
     <!--<div class="buttons">
       <paper-button dialog-dismiss>Cancel</paper-button>
@@ -81,8 +81,8 @@
     </div>-->
   </paper-dialog>
 
-  <paper-dialog id="endDialog" style="margin: 15px 15px 15px 15px" class="paper-date-picker-dialog" with-backdrop
-    on-iron-overlay-closed="endDialogClosed">
+  <paper-dialog id="strmEndDialog" style="margin: 15px 15px 15px 15px" class="paper-date-picker-dialog" with-backdrop
+    on-iron-overlay-closed="strmEndDialogClosed">
     <paper-date-picker id="endPicker" date="{{endDate}}" responsive-width="600px"></paper-date-picker>
     <!--<div class="buttons">
       <paper-button dialog-dismiss>Cancel</paper-button>
@@ -92,7 +92,7 @@
 
   <div id="pickercontainer" class="pickercontainer">
 
-    <paper-input id="startInput" onclick="startDialog.open()" value="[[dateFormat(startDate, 'LL')]]" label="Start" name="[[name]]">
+    <paper-input id="startInput" onclick="strmStartDialog.open()" value="[[dateFormat(startDate, 'LL')]]" label="Start" name="[[name]]">
     <!--<paper-input id="startInput" onclick="dateDialog.open()" value="[[dateFormat(date, 'LL')]]" label="Start" name="[[name]]">-->
       <iron-icon icon="icons:event" item-icon prefix>
       </iron-icon>
@@ -100,7 +100,7 @@
       </iron-icon>
     </paper-input>
 
-    <paper-input id="endInput" onclick="endDialog.open()" value="[[dateFormat(endDate, 'LL')]]" label="End" name="[[name]]">
+    <paper-input id="endInput" onclick="strmEndDialog.open()" value="[[dateFormat(endDate, 'LL')]]" label="End" name="[[name]]">
       <iron-icon icon="icons:event" item-icon prefix>
       </iron-icon>
       <iron-icon icon="icons:arrow-drop-down" item-icon suffix>
@@ -135,7 +135,12 @@
     is: 'na-streamflow',
     behaviors: [
       Polymer.IronResizableBehavior
-    ],
+    ],properties: {
+      isFirstTime: {
+        type: Boolean,
+        value: true
+      }
+    },
     listeners: {
       'iron-resize': '_onIronResize',
       'google-chart-ready': '_onChartReady'
@@ -154,34 +159,40 @@
       this.$.chartline2.redraw();
     },
     dateFormat: function(date, format) {
+      if (this.isFirstTime) {
+        var prevMM = moment(moment().subtract(1, 'month').calendar());
+        var start = moment(prevMM).format('YYYY') + moment(prevMM).format('MM') + moment(prevMM).format('DD') + "00";
+        var end = moment(this.endDate).format('YYYY') + moment(this.endDate).format('MM') + moment(this.endDate).format('DD') + "23";
+        this.isFirstTime = false;
+      } else {
+        var start = moment(this.startDate).format('YYYY') + moment(this.startDate).format('MM') + moment(this.startDate).format('DD') + "00";
+        var end = moment(this.endDate).format('YYYY') + moment(this.endDate).format('MM') + moment(this.endDate).format('DD') + "23";
+      }
 
       var app = document.getElementById("firebaseApp").app;
       var database = firebase.database(app);
 
       var stream = [];
-      var rainCounter = 0;
+      var childCounter = 0;
       var strmCounter = 0;
       var addition = 0;
-
-      var start = moment(this.startDate).format('YYYY') + moment(this.startDate).format('MM') + moment(this.startDate).format('DD') + "00";
-      var end = moment(this.endDate).format('YYYY') + moment(this.endDate).format('MM') + moment(this.endDate).format('DD') + "23";
 
       database.ref('/Modules/Data/').orderByKey().startAt(start).endAt(end).on('child_added', function(snapshot) {
         var day = moment(snapshot.key).format('dddd');
 
         snapshot.forEach(function(childSnapshot) {
-          addition = addition + childSnapshot.child('rainflow').val();
-          rainCounter++;
+          addition = addition + childSnapshot.child('strmflow').val();
+          childCounter++;
         });
 
-        var average = addition / rainCounter;
+        var average = addition / childCounter;
         var data = [day, average];
-        //console.log(data);
+        console.log(data);
 
         stream[strmCounter] = data;
         strmCounter++;
 
-        rainCounter = 0;
+        childCounter = 0;
         addition = 0;
         average = 0;
 
@@ -189,18 +200,18 @@
       });
       strmCounter = 0;
 
-      this.$.startDialog.close();
-      this.$.endDialog.close();
+      this.$.strmStartDialog.close();
+      this.$.strmEndDialog.close();
 
       return moment(date).format(format);
     },
     _onChartReady: function() {
 
     },
-    startDialogClosed: function() {
+    strmStartDialogClosed: function() {
 
     },
-    endDialogClosed: function() {
+    strmEndDialogClosed: function() {
 
     }
   });
