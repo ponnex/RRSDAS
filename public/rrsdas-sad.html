@@ -14,6 +14,7 @@
 <link rel="import" href="bower_components/iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="bower_components/google-chart/google-chart.html">
+<link rel="import" href="/bower_components/paper-dialog/paper-dialog.html">
 
 <dom-module id="rrsdas-sad">
 	<template>
@@ -167,6 +168,10 @@
 				</app-indexeddb-mirror>-->
 
 				<paper-toast id="paper_toast" alwaysOnTop="true"></paper-toast>
+
+				<paper-dialog id="modal" modal>
+					<h1>User Removed or Banned</h1>
+				</paper-dialog>
 
 			</paper-header-panel>
 		</paper-drawer-panel>
@@ -355,14 +360,19 @@
 			},
 			fabAction: function() {
 				if (this.$.menuListbox.selected == 1) {
-					console.log("Modules!");
 				} else {
-					console.log("Users!");
-					console.log(document.querySelector('na-users').addselector);
 					if (document.querySelector('na-users').addselector) {
 						document.querySelector('na-users').$.modal.open();
 					} else {
 						console.log("deleting...");
+
+						var app = document.getElementById("firebaseApp").app;
+						var database = firebase.database(app);
+
+						var updates = {};
+  					updates['/Users/' + document.querySelector('na-users').deletekey  + '/deactivate'] = true;
+						database.ref().update(updates);
+
 					}
 				}
 			}

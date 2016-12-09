@@ -83,6 +83,14 @@
       addselector: {
         type: Boolean,
         value: true
+      },
+      deletekey: {
+        type: String,
+        value: ""
+      },
+      deleteEmail: {
+        type: String,
+        value: ""
       }
     },
     ready: function() {
@@ -93,71 +101,98 @@
       var database = firebase.database(app);
 
       var query = database.ref('/Users/').orderByKey();
-      query.once("value").then(function(snapshot) {
+      query.on("value", function(snapshot) {
           var counter = 0;
           snapshot.forEach(function(childSnapshot) {
             var key = childSnapshot.key;
             var childData = childSnapshot.val();
-            console.log(JSON.stringify(childData));
-
-            if (!childData['isAdmin']) {
+            if (!childData['isAdmin'] && !childData['deactivate']) {
               users[counter] = childData;
               counter++;
-              console.log(counter);
             }
 
         });
 
-        var grid = document.querySelector('na-users').$.sort;
-        grid.items = users;
+        document.querySelector('na-users').drawTable(users);
+        users = [];
+      });
+    },
+    drawTable: function(users) {
+      var grid = document.querySelector('na-users').$.sort;
+      grid.items = users;
 
-        console.log(users);
+      console.log(users);
 
-        grid.addEventListener('sort-order-changed', function() {
-          var sortOrder = grid.sortOrder[0];
-          var sortProperty = grid.columns[sortOrder.column].name;
-          var sortDirection = sortOrder.direction;
-          grid.items.sort(function(a, b) {
-            var res;
-            var path = sortProperty.split('.');
-            for (var i = 0; i < path.length; i++) {
-              a = a[path[i]];
-              b = b[path[i]];
-            }
-            if (!isNaN(a)) {
-              res = parseInt(a, 10) - parseInt(b, 10);
-            } else {
-              res = a.localeCompare(b);
-            }
+      grid.addEventListener('sort-order-changed', function() {
+        var sortOrder = grid.sortOrder[0];
+        var sortProperty = grid.columns[sortOrder.column].name;
+        var sortDirection = sortOrder.direction;
+        grid.items.sort(function(a, b) {
+          var res;
+          var path = sortProperty.split('.');
+          for (var i = 0; i < path.length; i++) {
+            a = a[path[i]];
+            b = b[path[i]];
+          }
+          if (!isNaN(a)) {
+            res = parseInt(a, 10) - parseInt(b, 10);
+          } else {
+            res = a.localeCompare(b);
+          }
 
-            if ('desc' === sortDirection) {
-              res *= -1;
-            }
-            return res;
-          });
+          if ('desc' === sortDirection) {
+            res *= -1;
+          }
+          return res;
         });
+      });
 
-        grid.addEventListener('selected-items-changed', function() {
+      grid.addEventListener('selected-items-changed', function() {
+        if(grid.selection.selected() == "") {
+          document.querySelector('na-users').addselector = true;
+          document.querySelector('rrsdas-sad').$.fab.style.background = "#515C6B"
+          document.querySelector('rrsdas-sad').$.fab.icon = "add"
+        } else {
           document.querySelector('na-users').addselector = false;
           document.querySelector('rrsdas-sad').$.fab.style.background = "#FF0000"
           document.querySelector('rrsdas-sad').$.fab.icon = "delete"
-          if(grid.selection.selected() == "") {
-            document.querySelector('na-users').addselector = true;
-            document.querySelector('rrsdas-sad').$.fab.style.background = "#515C6B"
-            document.querySelector('rrsdas-sad').$.fab.icon = "add"
-          }
-        });
 
-        var filterInput = document.querySelector('na-users').$.filter;
-        filterInput.addEventListener('value-changed', function() {
-          var filterText = filterInput.value.toLowerCase();
-          grid.items = users.filter(function(val) {
-            if (filterText) {
-              return (val.email.toLowerCase()).indexOf(filterText) > -1;
-            } else {
-              return true;
-            }
+          var app = document.getElementById("firebaseApp").app;
+          var database = firebase.database(app);
+
+          var query = database.ref('/Users/').orderByKey();
+          query.on("value", function(snapshot) {
+              var counter = 0;
+              snapshot.forEach(function(childSnapshot) {
+                var key = childSnapshot.key;
+                var childData = childSnapshot.val();
+                if (!childData['isAdmin'] && !childData['deactivate']) {
+
+                  if(grid.selection.selected() == counter) {
+                    console.log(grid.selection.selected());
+                    console.log(key);
+                    document.querySelector('na-users').deletekey = key;
+                    document.querySelector('na-users').deleteEmail = childData['email'];
+                    return true;
+                  }
+
+                  counter++;
+                }
+
+            });
           });
+        }
+      });
+
+      var filterInput = document.querySelector('na-users').$.filter;
+      filterInput.addEventListener('value-changed', function() {
+        var filterText = filterInput.value.toLowerCase();
+        grid.items = users.filter(function(val) {
+          if (filterText) {
+            return (val.email.toLowerCase()).indexOf(filterText) > -1;
+          } else {
+            return true;
+          }
         });
       });
     }
