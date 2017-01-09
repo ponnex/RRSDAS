@@ -5,6 +5,8 @@
 <link rel="import" href="/bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="/bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="/bower_components/paper-tabs/paper-tab.html">
+<link rel="import" href="/bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="/bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="/bower_components/neon-animation/animations/fade-out-animation.html">
 <link rel="import" href="/bower_components/iron-resizable-behavior/iron-resizable-behavior.html">
 
@@ -36,6 +38,14 @@
     .pickercontainer {
       @apply(--layout-horizontal);
     }
+
+    .dropdown-content {
+      @apply(--layout-vertical);
+      width: fill;
+      height: fill;
+      padding: 0;
+    }
+    
     .graph-div {
       height: auto;
       width: 68%;
@@ -44,6 +54,10 @@
     .modules-summary-div {
       height: auto;
       width: 30%;
+    }
+
+    paper-item {
+      padding: 8px;
     }
 
     iron-icon {
@@ -92,6 +106,14 @@
 
   <div id="pickercontainer" class="pickercontainer">
 
+    <paper-dropdown-menu label="Sort By" vertical-align="top" horizontal-align="right">
+      <paper-listbox class="dropdown-content" selected="0">
+        <paper-item>Monthly</paper-item>
+        <paper-item>Weekly</paper-item>
+        <paper-item>Daily</paper-item>
+      </paper-listbox>
+    </paper-dropdown-menu>
+
     <paper-input id="startInput" onclick="strmStartDialog.open()" value="[[dateFormat(startDate, 'LL')]]" label="Start" name="[[name]]">
     <!--<paper-input id="startInput" onclick="dateDialog.open()" value="[[dateFormat(date, 'LL')]]" label="Start" name="[[name]]">-->
       <iron-icon icon="icons:event" item-icon prefix>
@@ -106,6 +128,7 @@
       <iron-icon icon="icons:arrow-drop-down" item-icon suffix>
       </iron-icon>
     </paper-input>
+
   </div>
 
   <div id="container" class="container">

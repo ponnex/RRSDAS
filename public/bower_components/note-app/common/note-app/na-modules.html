@@ -13,20 +13,47 @@
 
       height: 100vh;
       width: auto;
+      margin: 0 2% 2% 2%;
 
       @apply(--layout);
-      @apply(--layout-center-center);
+      @apply(--layout-horizontal);
     }
-    h1 {
-      color: #000000;
+    .modules-card-div {
+      width: 100%;
+      height: fit-content;
     }
+    .item-div {
+      @apply(--layout-flex);
+      margin: 1% 1% 1% 0;
+      display: inline-block;
+      width: fit-content;
+    }
+
     @media (max-width: 600px) {
   		:host {
   			 top: var(--calculated-paper-toolbar-sm-height);
   		}
   	}
   </style>
-    <h1>Modules</h1>
+
+    <div class="modules-card-div">
+      <div class="item-div">
+        <na-modules-cards
+          id$="1"
+          image="Mang Kanor"
+          name="Longitude: 85.43 Latitude: 24.78">
+        </na-modules-cards>
+      </div>
+
+      <div class="item-div">
+        <na-modules-cards
+          id$="1"
+          image="Matanglawin"
+          name="Longitude: 85.43 Latitude: 24.78">
+        </na-modules-cards>
+      </div>
+    </div>
+
   </template>
   <script>
   Polymer({

@@ -36,14 +36,27 @@
     .pickercontainer {
       @apply(--layout-horizontal);
     }
+
+    .dropdown-content {
+      @apply(--layout-vertical);
+      width: fill;
+      height: fill;
+      padding: 0;
+    }
+
     .graph-div {
       height: auto;
       width: 68%;
       padding-right: 2%;
     }
+
     .modules-summary-div {
       height: auto;
       width: 30%;
+    }
+
+    paper-item {
+      padding: 8px;
     }
 
     iron-icon {
@@ -91,6 +104,14 @@
   </paper-dialog>
 
   <div id="pickercontainer" class="pickercontainer">
+
+    <paper-dropdown-menu label="Sort By" vertical-align="top" horizontal-align="right">
+      <paper-listbox class="dropdown-content" selected="0">
+        <paper-item>Monthly</paper-item>
+        <paper-item>Weekly</paper-item>
+        <paper-item>Daily</paper-item>
+      </paper-listbox>
+    </paper-dropdown-menu>
 
     <paper-input id="startInput" onclick="rainStartDialog.open()" value="[[dateFormat(startDate, 'LL')]]" label="Start" name="[[name]]">
     <!--<paper-input id="startInput" onclick="dateDialog.open()" value="[[dateFormat(date, 'LL')]]" label="Start" name="[[name]]">-->
