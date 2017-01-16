@@ -5,6 +5,7 @@
 <link rel="import" href="/bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="/bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="/bower_components/paper-tabs/paper-tab.html">
+<link rel="import" href="/bower_components/paper-button/paper-button.html">
 <link rel="import" href="/bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="/bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="/bower_components/neon-animation/animations/fade-out-animation.html">
@@ -45,7 +46,7 @@
       height: fill;
       padding: 0;
     }
-    
+
     .graph-div {
       height: auto;
       width: 68%;
@@ -58,6 +59,16 @@
 
     paper-item {
       padding: 8px;
+    }
+
+    paper-button.csv {
+      --paper-button-ink-color: #515C6B;
+      background-color: var(--paper-green-500);
+      align-self: center;
+    }
+
+    download-csv {
+      --iron-icon-fill-color: #FFFFFF;
     }
 
     iron-icon {
@@ -129,6 +140,8 @@
       </iron-icon>
     </paper-input>
 
+    <paper-button on-tap="test" raised class="csv"><iron-icon icon="file-download" class="download-csv"></iron-icon>Import CSV</paper-button>
+
   </div>
 
   <div id="container" class="container">
@@ -162,6 +175,10 @@
       isFirstTime: {
         type: Boolean,
         value: true
+      },
+      csvData: {
+        type: String,
+        value: ''
       }
     },
     listeners: {
@@ -172,7 +189,7 @@
       this.$.startInput.value = moment(moment().subtract(1, 'month').calendar()).format('LL');
     },
     test: function() {
-
+      document.querySelector('na-streamflow').downloadCsv("testcsv.csv", document.querySelector('na-streamflow').csvData)
     },
     attached: function() {
       this.async(this.notifyResize, 1);
@@ -196,41 +213,54 @@
       var database = firebase.database(app);
 
       var stream = [];
-      var childCounter = 0;
       var strmCounter = 0;
       var addition = 0;
+      var csv = '';
 
       database.ref('/Modules/Data/').orderByKey().startAt(start).endAt(end).on('child_added', function(snapshot) {
         var day = moment(snapshot.key).format('dddd');
 
         snapshot.forEach(function(childSnapshot) {
-          addition = addition + childSnapshot.child('strmflow').val();
-          childCounter++;
+          addition = childSnapshot.child('strmflow').val();
+          var data = [day, addition];
+          if (strmCounter == 0) {
+            csv = moment(snapshot.key).format('MMMM Do YYYY') + ',' + '\r\n' + "Day,Time, Streamflow\r\n";
+          }
+          csv += moment(snapshot.key).format('dddd, h:mm:ss a') + ',' + addition + '\r\n';
+          document.querySelector('na-streamflow').csvData = csv;
+
+          stream[strmCounter] = data;
+          strmCounter++;
         });
-
-        var average = addition / childCounter;
-        var data = [day, average];
-        console.log(data);
-
-        stream[strmCounter] = data;
-        strmCounter++;
-
-        childCounter = 0;
-        addition = 0;
-        average = 0;
-
         document.getElementById("strmflow").rows = stream;
       });
-      strmCounter = 0;
 
+      strmCounter = 0;
       this.$.strmStartDialog.close();
       this.$.strmEndDialog.close();
 
       return moment(date).format(format);
     },
+
+    downloadCsv: function(filename, text) {
+        var pom = document.createElement('a');
+        pom.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(text));
+        pom.setAttribute('download', filename);
+
+        if (document.createEvent) {
+            var event = document.createEvent('MouseEvents');
+            event.initEvent('click', true, true);
+            pom.dispatchEvent(event);
+        }
+        else {
+            pom.click();
+        }
+    },
+
     _onChartReady: function() {
 
     },
+
     strmStartDialogClosed: function() {
 
     },

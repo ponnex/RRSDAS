@@ -46,26 +46,52 @@
   	}
   </style>
   <div class="container">
-    <google-map latitude="8.4486783" longitude="124.6244256" disable-default-ui zoom="14" fit-to-markers api-key="AIzaSyClmzC471aGG2kq8LSyMeqKYaNdgaUI5HQ">
-      <google-map-marker latitude="8.4486783" longitude="124.6244256" click-events>
-        <div class="graph-div">
-          <google-chart
-            id="chartline1"
-            type='line'
-            options='{"title": "Stream Flow"}'
-            cols='[{"label":"Month", "type":"string"}, {"label":"Stream", "type":"number"}]'
-            rows='[["Jan", 31],["Feb", 28],["Mar", 31]]'>
-          </google-chart>
-        </div>
-      </google-map-marker>
+    <google-map id="gmap" latitude="8.4486783" longitude="124.6244256" disable-default-ui zoom="14" fit-to-markers api-key="AIzaSyClmzC471aGG2kq8LSyMeqKYaNdgaUI5HQ">
+      <!--<template is="dom-repeat" items="[[marker]]" as="item">
+            <google-map-marker latitude="[[item.latitude]]" longitude="[[item.longitude]]" title="[[item.title]]">
+            </google-map-marker>
+        </template>-->
+    </google-map>
+
+    <!--<google-map latitude="8.4486783" longitude="124.6244256" disable-default-ui zoom="14" >
       <google-map-marker latitude="8.481494" longitude="124.65145" title="Mang Kanor" click-events><h1>Mang Kanor</h1></google-map-marker>
       <google-map-marker latitude="8.488664" longitude="124.644351" title="Matanglawin" click-events><h1>Matanglawin</h1></google-map-marker>
-    </google-map>
+    </google-map>-->
 	</div>
   </template>
   <script>
   Polymer({
-    is: 'na-map'
+    is: 'na-map',
+    listeners: {
+      'google-map-ready': '_onMapReady',
+    },
+    properties: {
+      marker: {
+        type: Object,
+        value: []
+      }
+    },
+    ready: function() {
+
+
+    },
+    _onMapReady: function() {
+      var app = document.getElementById("firebaseApp").app;
+      var database = firebase.database(app);
+
+      database.ref('/Modules/Profiles/').orderByKey().on('child_added', function(snapshot) {
+        var marker = document.createElement('google-map-marker');
+        marker.longitude = snapshot.child('long').val();
+        marker.latitude = snapshot.child('lat').val();
+        marker.title = snapshot.child('name').val();
+        marker.innerHTML = snapshot.child('name').val();
+        Polymer.dom(document.querySelector('na-map').$.gmap).appendChild(marker);
+      });
+
+    },
+    displayMarkers: function() {
+
+    }
   });
   </script>
 </dom-module>

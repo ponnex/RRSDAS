@@ -26,3 +26,45 @@
 [info] Public Directory: public
 [info] 
 [info] Server listening at: http://localhost:5000
+[debug] ----------------------------------------------------------------------
+[debug] Command:      C:\Program Files\nodejs\node.exe C:\Users\User\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase serve
+[debug] CLI Version:  3.0.8
+[debug] Platform:     win32
+[debug] Node Version: v4.5.0
+[debug] Time:         Tue Jan 10 2017 12:31:49 GMT+0800 (Malay Peninsula Standard Time)
+[debug] ----------------------------------------------------------------------
+[debug] 
+[info] Starting Firebase development server...
+[info] 
+[info] Project Directory: C:\Users\User\rrsdas
+[info] Public Directory: public
+[info] 
+[info] Server listening at: http://localhost:5000
+[debug] ----------------------------------------------------------------------
+[debug] Command:      C:\Program Files\nodejs\node.exe C:\Users\User\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase serve
+[debug] CLI Version:  3.0.8
+[debug] Platform:     win32
+[debug] Node Version: v4.5.0
+[debug] Time:         Thu Jan 12 2017 22:47:58 GMT+0800 (Malay Peninsula Standard Time)
+[debug] ----------------------------------------------------------------------
+[debug] 
+[info] Starting Firebase development server...
+[info] 
+[info] Project Directory: C:\Users\User\rrsdas
+[info] Public Directory: public
+[info] 
+[info] Server listening at: http://localhost:5000
+[debug] ----------------------------------------------------------------------
+[debug] Command:      C:\Program Files\nodejs\node.exe C:\Users\User\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase serve
+[debug] CLI Version:  3.0.8
+[debug] Platform:     win32
+[debug] Node Version: v4.5.0
+[debug] Time:         Sun Jan 15 2017 19:07:17 GMT+0800 (Malay Peninsula Standard Time)
+[debug] ----------------------------------------------------------------------
+[debug] 
+[info] Starting Firebase development server...
+[info] 
+[info] Project Directory: C:\Users\User\rrsdas
+[info] Public Directory: public
+[info] 
+[info] Server listening at: http://localhost:5000
