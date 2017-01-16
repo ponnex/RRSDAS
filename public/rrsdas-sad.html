@@ -167,7 +167,7 @@
 					persisted-data="{{persistedNotes}}">
 				</app-indexeddb-mirror>-->
 
-				<paper-toast id="paper_toast" alwaysOnTop="true"></paper-toast>
+				<paper-toast id="paper_toast" alwaysOnTop="true" duration="Infinity"></paper-toast>
 
 				<paper-dialog id="modal" modal>
 					<h1>User Removed or Banned</h1>
@@ -184,8 +184,6 @@
 				Polymer.NoteAppBehavior,
 			],
 			ready: function() {
-				console.log("READY");
-
 				//get database
 				var app = document.getElementById("firebaseApp").app;
 				var database = firebase.database(app);
@@ -306,6 +304,9 @@
 						document.querySelector('na-login').$.bub11.style.webkitAnimationPlayState = "paused";
 						document.querySelector('na-login').$.bub11.style.animationPlayState = "paused";
 
+						var toast = document.querySelector('rrsdas-sad').$.paper_toast;
+						toast.hide();
+
 					})
 					.catch(function(error) {
 						console.log(error.code);
@@ -372,7 +373,6 @@
 						var updates = {};
   					updates['/Users/' + document.querySelector('na-users').deletekey  + '/deactivate'] = true;
 						database.ref().update(updates);
-
 					}
 				}
 			}

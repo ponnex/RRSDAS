@@ -347,7 +347,28 @@ Polymer({
 		this.$.password.autoValidate = false;
 		sessionStorage.setItem('username', this.$.username.value);
 		sessionStorage.setItem('password', this.$.password.value);
-		this.fire('sign-in', null, { bubbles: false });
+
+		var app = document.getElementById("firebaseApp").app;
+		var database = firebase.database(app);
+
+		database.ref('/Users/').orderByKey().once("value", function(snapshot) {
+			snapshot.forEach(function(childSnapshot) {
+				if(childSnapshot.child('email').val() == document.querySelector('na-login').$.username.value) {
+					if(!childSnapshot.child('deactivate').val()) {
+						var toast = document.querySelector('rrsdas-sad').$.paper_toast;
+						toast.hide();
+						document.querySelector('na-login').fire('sign-in', null, { bubbles: false });
+						document.querySelector('rrsdas-sad').$.menuListbox.selected = 0;
+					} else {
+						var toast = document.querySelector('rrsdas-sad').$.paper_toast;
+						toast.show("The account you are trying to view has been suspended.");
+						document.querySelector('na-login').$.signInButton.disabled = false;
+						document.querySelector('na-login').$.signInText.innerHTML = "Sign In";
+					}
+				}
+		  });
+
+		});
 	},
 
 	signUp: function() {

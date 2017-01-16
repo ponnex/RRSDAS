@@ -194,6 +194,37 @@
     },
     ready: function() {
       this.$.startInput.value = moment(moment().subtract(1, 'month').calendar()).format('LL');
+
+      var start = this.$.startInput.value;
+      var end = this.$.endInput.value;
+
+      var app = document.getElementById("firebaseApp").app;
+      var database = firebase.database(app);
+
+      var rain = [];
+      var rainCounter = 0;
+      var addition = 0;
+      var csv = '';
+
+      database.ref('/Modules/Data/').orderByKey().startAt(start).endAt(end).once("value", function(snapshot) {
+        var day = moment(snapshot.key).format('dddd');
+
+        snapshot.forEach(function(childSnapshot) {
+          addition = childSnapshot.child('strmflow').val();
+          var data = [day, addition];
+          if (rainCounter == 0) {
+            csv = moment(snapshot.key).format('MMMM Do YYYY') + ',' + '\r\n' + "Day,Time, Rainflow\r\n";
+          }
+          csv += moment(snapshot.key).format('dddd, h:mm:ss a') + ',' + addition + '\r\n';
+          document.querySelector('na-rainflow').csvData = csv;
+
+          rain[rainCounter] = data;
+          rainCounter++;
+        });
+        document.getElementById("rainflow").rows = rain;
+      });
+
+      rainCounter = 0;
     },
     downloadCsv: function() {
       document.querySelector('na-streamflow').toCsv(this.$.startInput.value + " - " + this.$.endInput.value + ".csv", document.querySelector('na-streamflow').csvData);
@@ -226,8 +257,7 @@
       var addition = 0;
       var csv = '';
 
-
-      database.ref('/Modules/Data/').orderByKey().startAt(start).endAt(end).once("value", function(snapshot) {
+      database.ref('/Modules/Data/').orderByKey().startAt(start).endAt(end).on('child_added', function(snapshot) {
         var day = moment(snapshot.key).format('dddd');
 
         snapshot.forEach(function(childSnapshot) {

@@ -7,7 +7,7 @@
       ".write": "root.child('Admin').child('uid').val() == auth.uid && root.child('Users').child(auth.uid).child('isAdmin').val() == true"
     },
     "Users": {
-      ".read": "root.child('Users').child(auth.uid).val() != null",
+      ".read": true,
       ".write": "root.child('Admin').child('uid').val() == auth.uid && root.child('Users').child(auth.uid).child('isAdmin').val() == true"
     }
   }
