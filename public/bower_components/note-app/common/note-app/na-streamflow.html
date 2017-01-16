@@ -140,7 +140,7 @@
       </iron-icon>
     </paper-input>
 
-    <paper-button on-tap="test" raised class="csv"><iron-icon icon="file-download" class="download-csv"></iron-icon>Import CSV</paper-button>
+    <paper-button on-tap="downloadCsv" raised class="csv"><iron-icon icon="file-download" class="download-csv"></iron-icon>Import CSV</paper-button>
 
   </div>
 
@@ -179,6 +179,14 @@
       csvData: {
         type: String,
         value: ''
+      },
+      start: {
+        type: Number,
+        value: 0
+      },
+      end: {
+        type: Number,
+        value: 0
       }
     },
     listeners: {
@@ -187,9 +195,40 @@
     },
     ready: function() {
       this.$.startInput.value = moment(moment().subtract(1, 'month').calendar()).format('LL');
+      //this.$.startPicker.date = new Date(moment(moment(this.startDate).subtract(1, 'month').calendar()).format('ddd MMM DD YYYY h:mm:ss')).toString();
+      var start = this.$.startInput.value;
+      var end = this.$.endInput.value;
+
+      var app = document.getElementById("firebaseApp").app;
+      var database = firebase.database(app);
+
+      var stream = [];
+      var strmCounter = 0;
+      var addition = 0;
+      var csv = '';
+
+      database.ref('/Modules/Data/').orderByKey().startAt(start).endAt(end).once("value", function(snapshot) {
+        var day = moment(snapshot.key).format('dddd');
+
+        snapshot.forEach(function(childSnapshot) {
+          addition = childSnapshot.child('strmflow').val();
+          var data = [day, addition];
+          if (strmCounter == 0) {
+            csv = moment(snapshot.key).format('MMMM Do YYYY') + ',' + '\r\n' + "Day,Time, Streamflow\r\n";
+          }
+          csv += moment(snapshot.key).format('dddd, h:mm:ss a') + ',' + addition + '\r\n';
+          document.querySelector('na-streamflow').csvData = csv;
+
+          stream[strmCounter] = data;
+          strmCounter++;
+        });
+        document.getElementById("strmflow").rows = stream;
+      }.bind(this));
+
+      strmCounter = 0;
     },
-    test: function() {
-      document.querySelector('na-streamflow').downloadCsv("testcsv.csv", document.querySelector('na-streamflow').csvData)
+    downloadCsv: function() {
+      document.querySelector('na-streamflow').toCsv(this.$.startInput.value + " - " + this.$.endInput.value + ".csv", document.querySelector('na-streamflow').csvData);
     },
     attached: function() {
       this.async(this.notifyResize, 1);
@@ -199,14 +238,16 @@
       this.$.chartline2.redraw();
     },
     dateFormat: function(date, format) {
+      var start = this.$.startInput.value;
+      var end = this.$.endInput.value;
       if (this.isFirstTime) {
         var prevMM = moment(moment().subtract(1, 'month').calendar());
-        var start = moment(prevMM).format('YYYY') + moment(prevMM).format('MM') + moment(prevMM).format('DD') + "00";
-        var end = moment(this.endDate).format('YYYY') + moment(this.endDate).format('MM') + moment(this.endDate).format('DD') + "23";
+        start = moment(prevMM).format('YYYY') + moment(prevMM).format('MM') + moment(prevMM).format('DD') + "00";
+        end = moment(this.endDate).format('YYYY') + moment(this.endDate).format('MM') + moment(this.endDate).format('DD') + "23";
         this.isFirstTime = false;
       } else {
-        var start = moment(this.startDate).format('YYYY') + moment(this.startDate).format('MM') + moment(this.startDate).format('DD') + "00";
-        var end = moment(this.endDate).format('YYYY') + moment(this.endDate).format('MM') + moment(this.endDate).format('DD') + "23";
+        start = moment(this.startDate).format('YYYY') + moment(this.startDate).format('MM') + moment(this.startDate).format('DD') + "00";
+        end = moment(this.endDate).format('YYYY') + moment(this.endDate).format('MM') + moment(this.endDate).format('DD') + "23";
       }
 
       var app = document.getElementById("firebaseApp").app;
@@ -233,7 +274,7 @@
           strmCounter++;
         });
         document.getElementById("strmflow").rows = stream;
-      });
+      }.bind(this));
 
       strmCounter = 0;
       this.$.strmStartDialog.close();
@@ -242,7 +283,7 @@
       return moment(date).format(format);
     },
 
-    downloadCsv: function(filename, text) {
+    toCsv: function(filename, text) {
         var pom = document.createElement('a');
         pom.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(text));
         pom.setAttribute('download', filename);
@@ -260,7 +301,6 @@
     _onChartReady: function() {
 
     },
-
     strmStartDialogClosed: function() {
 
     },
