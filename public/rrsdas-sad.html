@@ -354,26 +354,28 @@
 					} else {
 						document.querySelector('rrsdas-sad').$.fab.hidden = false;
 					}
+					if (this.$.menuListbox.selected != 0) {
+						document.querySelector('na-toolbar').$.downloadCsv.hidden = true;
+					} else {
+						document.querySelector('na-toolbar').$.downloadCsv.hidden = false;
+					}
 				}
 
 				this.$.pages.selectIndex(this.$.menuListbox.selected);
 				this.$.drawer.closeDrawer();
 			},
 			fabAction: function() {
-				if (this.$.menuListbox.selected == 1) {
+				if (document.querySelector('na-users').addselector) {
+					document.querySelector('na-users').$.modal.open();
 				} else {
-					if (document.querySelector('na-users').addselector) {
-						document.querySelector('na-users').$.modal.open();
-					} else {
-						console.log("deleting...");
+					console.log("deleting...");
 
-						var app = document.getElementById("firebaseApp").app;
-						var database = firebase.database(app);
+					var app = document.getElementById("firebaseApp").app;
+					var database = firebase.database(app);
 
-						var updates = {};
-  					updates['/Users/' + document.querySelector('na-users').deletekey  + '/deactivate'] = true;
-						database.ref().update(updates);
-					}
+					var updates = {};
+					updates['/Users/' + document.querySelector('na-users').deletekey  + '/deactivate'] = true;
+					database.ref().update(updates);
 				}
 			}
 

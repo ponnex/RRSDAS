@@ -1,6 +1,7 @@
 <link rel="import" href="/bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="/bower_components/paper-tabs/paper-tab.html">
 <link rel="import" href="/bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="/bower_components/iron-signals/iron-signals.html">
 
 <dom-module id="na-overview">
   <template>
@@ -60,6 +61,13 @@
     is: 'na-overview',
     onItemSelected: function() {
       this.$.overviewPages.selectIndex(this.$.paperTabs.selected);
+      if(this.$.paperTabs.selected == 0) {
+        console.log("iron-signal-readystrm");
+        this.fire('iron-signal', {name: 'readystrm', data: null});
+      } else if(this.$.paperTabs.selected == 1) {
+        console.log("iron-signal-readyrain");
+        this.fire('iron-signal', {name: 'readyrain', data: null});
+      }
     }
   });
   </script>

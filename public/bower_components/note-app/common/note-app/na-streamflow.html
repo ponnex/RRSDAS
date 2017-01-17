@@ -5,7 +5,8 @@
 <link rel="import" href="/bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="/bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="/bower_components/paper-tabs/paper-tab.html">
-<link rel="import" href="/bower_components/paper-button/paper-button.html">
+<link rel="import" href="/bower_components/iron-signals/iron-signals.html">
+<link rel="import" href="/bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="/bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="/bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="/bower_components/neon-animation/animations/fade-out-animation.html">
@@ -59,16 +60,6 @@
 
     paper-item {
       padding: 8px;
-    }
-
-    paper-button.csv {
-      --paper-button-ink-color: #515C6B;
-      background-color: var(--paper-green-500);
-      align-self: center;
-    }
-
-    download-csv {
-      --iron-icon-fill-color: #FFFFFF;
     }
 
     iron-icon {
@@ -140,8 +131,6 @@
       </iron-icon>
     </paper-input>
 
-    <paper-button on-tap="downloadCsv" raised class="csv"><iron-icon icon="file-download" class="download-csv"></iron-icon>Import CSV</paper-button>
-
   </div>
 
   <div id="container" class="container">
@@ -165,16 +154,24 @@
     </div>
   </div>
 
+  <iron-signals on-iron-signal-downloadstrm="downloadCsv"></iron-signals>
+  <iron-signals on-iron-signal-readystrm="checkCsv"></iron-signals>
+
   </template>
   <script>
   Polymer({
     is: 'na-streamflow',
     behaviors: [
       Polymer.IronResizableBehavior
-    ],properties: {
+    ],
+    properties: {
       isFirstTime: {
         type: Boolean,
         value: true
+      },
+      isCsvReady: {
+        type: Boolean,
+        value: false
       },
       csvData: {
         type: String,
@@ -193,39 +190,12 @@
       'iron-resize': '_onIronResize',
       'google-chart-ready': '_onChartReady'
     },
-    ready: function() {
-      this.$.startInput.value = moment(moment().subtract(1, 'month').calendar()).format('LL');
-      //this.$.startPicker.date = new Date(moment(moment(this.startDate).subtract(1, 'month').calendar()).format('ddd MMM DD YYYY h:mm:ss')).toString();
-      var start = this.$.startInput.value;
-      var end = this.$.endInput.value;
-
-      var app = document.getElementById("firebaseApp").app;
-      var database = firebase.database(app);
-
-      var stream = [];
-      var strmCounter = 0;
-      var addition = 0;
-      var csv = '';
-
-      database.ref('/Modules/Data/').orderByKey().startAt(start).endAt(end).once("value", function(snapshot) {
-        var day = moment(snapshot.key).format('dddd');
-
-        snapshot.forEach(function(childSnapshot) {
-          addition = childSnapshot.child('strmflow').val();
-          var data = [day, addition];
-          if (strmCounter == 0) {
-            csv = moment(snapshot.key).format('MMMM Do YYYY') + ',' + '\r\n' + "Day,Time, Streamflow\r\n";
-          }
-          csv += moment(snapshot.key).format('dddd, h:mm:ss a') + ',' + addition + '\r\n';
-          document.querySelector('na-streamflow').csvData = csv;
-
-          stream[strmCounter] = data;
-          strmCounter++;
-        });
-        document.getElementById("strmflow").rows = stream;
-      });
-
-      strmCounter = 0;
+    checkCsv: function() {
+      if(this.isCsvReady) {
+        document.querySelector('na-toolbar').$.downloadCsv.hidden = false;
+      } else {
+        document.querySelector('na-toolbar').$.downloadCsv.hidden = true;
+      }
     },
     downloadCsv: function() {
       document.querySelector('na-streamflow').toCsv(this.$.startInput.value + " - " + this.$.endInput.value + ".csv", document.querySelector('na-streamflow').csvData);
@@ -259,9 +229,16 @@
       var csv = '';
 
       database.ref('/Modules/Data/').orderByKey().startAt(start).endAt(end).on('child_added', function(snapshot) {
-        var day = moment(snapshot.key).format('dddd');
+        var day = moment(snapshot.key).format('MMM-Do-YY');
 
         snapshot.forEach(function(childSnapshot) {
+          if(childSnapshot.child('strmflow').val() != '') {
+            document.querySelector('na-toolbar').$.downloadCsv.hidden = false;
+            document.querySelector('na-streamflow').isCsvReady = true;
+          } else if (childSnapshot.child('strmflow').val() == ''){
+            document.querySelector('na-toolbar').$.downloadCsv.hidden = true;
+            document.querySelector('na-streamflow').isCsvReady = false;
+          }
           addition = childSnapshot.child('strmflow').val();
           var data = [day, addition];
           if (strmCounter == 0) {
@@ -272,6 +249,7 @@
 
           stream[strmCounter] = data;
           strmCounter++;
+          this.isCsvReady = true;
         });
         document.getElementById("strmflow").rows = stream;
       });
