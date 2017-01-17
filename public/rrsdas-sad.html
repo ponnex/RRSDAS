@@ -54,6 +54,7 @@
 				--paper-toolbar-background: #515C6B;
 			}
 		</style>
+
 		<paper-drawer-panel edge-swipe-sensitivity="15" force-narrow id="drawer" disable-swipe="[[!signedIn]]">
 
 			<paper-header-panel drawer id="drawer" class=container>
@@ -84,7 +85,6 @@
 						<iron-icon icon="icons:settings" item-icon></iron-icon>
 							Settings
 					</paper-icon-item>
-					<!-- Settings should pop up as a diaglog not a page -->
 				</paper-listbox>
 
 			</paper-header-panel>
@@ -101,13 +101,12 @@
 					<na-overview></na-overview>
 				  <na-modules></na-modules>
 					<na-map></na-map>
-					<na-users></na-users>
+					<na-users on-sign-up="signUp"></na-users>
 					<na-settings></na-settings>
 				</iron-pages>
 
 				<na-login
 					on-sign-in="signIn"
-					on-sign-up="signUp"
 					signed-in="[[signedIn]]"
 					disabled="[[!online]]">
 				</na-login>
@@ -160,6 +159,12 @@
 					user="{{user}}">
 				</firebase-auth>
 
+				<firebase-auth
+					id="authSecondary"
+					app-name="rrsdas-sad"
+					provider="password">
+				</firebase-auth>
+
 				<!--<app-indexeddb-mirror
 					session="[[user.uid]]"
 					key="rrsdas-sad"
@@ -167,16 +172,24 @@
 					persisted-data="{{persistedNotes}}">
 				</app-indexeddb-mirror>-->
 
-				<paper-toast id="paper_toast" alwaysOnTop="true" duration="Infinity"></paper-toast>
-
-				<paper-dialog id="modal" modal>
-					<h1>User Removed or Banned</h1>
-				</paper-dialog>
+				<paper-toast id="paper_toast" alwaysOnTop="true" duration="6000"></paper-toast>
 
 			</paper-header-panel>
 		</paper-drawer-panel>
 
 	</template>
+	<script src="https://www.gstatic.com/firebasejs/3.6.5/firebase.js"></script>
+	<script>
+	  // Initialize Firebase
+	  var config = {
+	    apiKey: "AIzaSyBiUBw9rJNFy49xMdypnqaLpkbGRczSpMo",
+	    authDomain: "rrsdas-e2420.firebaseapp.com",
+	    databaseURL: "https://rrsdas-e2420.firebaseio.com",
+	    storageBucket: "rrsdas-e2420.appspot.com",
+	    messagingSenderId: "1007697382413"
+	  };
+	  firebase.initializeApp(config);
+	</script>
 	<script>
 		Polymer({
 			is: 'rrsdas-sad',
@@ -187,13 +200,10 @@
 				//get database
 				var app = document.getElementById("firebaseApp").app;
 				var database = firebase.database(app);
-				console.log(sessionStorage.getItem('currentUserUID'));
 
 				if (sessionStorage.getItem('currentUserUID')) {
-					console.log("User is log on");
 					database.ref('/Users/' + sessionStorage.getItem('currentUserUID') + '/isAdmin').on('value', function(snapshot) {
 						var isAdmin = snapshot.val();
-						console.log(isAdmin);
 						if (isAdmin) {
 							document.querySelector('rrsdas-sad').admin = true;
 							document.querySelector('rrsdas-sad').$.fab.hidden = false;
@@ -230,10 +240,8 @@
 						var currentUser = document.querySelector('rrsdas-sad').$.auth.auth.currentUser;
 
 						if (currentUser) {
-						console.log("User is log on");
 						database.ref('/Users/' + currentUser.uid + '/isAdmin').once('value').then(function(snapshot) {
 							var isAdmin = snapshot.val();
-							console.log(isAdmin);
 							if (isAdmin) {
 								document.querySelector('rrsdas-sad').admin = true;
 								//document.querySelector('rrsdas-sad').$.fab.hidden = false;
@@ -254,6 +262,7 @@
 								document.querySelector('rrsdas-sad').$.itemUsers.hidden = true;
 							}
 						});
+
 						} else {
 							console.log("User is logged out");
 						}
@@ -307,6 +316,11 @@
 						var toast = document.querySelector('rrsdas-sad').$.paper_toast;
 						toast.hide();
 
+						if (document.querySelector('rrsdas-sad').admin = true) {
+							sessionStorage.setItem('adusername', sessionStorage.getItem('username'));
+							sessionStorage.setItem('adpassword', sessionStorage.getItem('password'));
+						}
+
 					})
 					.catch(function(error) {
 						console.log(error.code);
@@ -318,25 +332,52 @@
 						document.querySelector('na-login').$.signInText.innerHTML = "Sign In";
 					});
 			},
-			/*
-				signUp: function() {
-					this.$.auth.createUserWithEmailAndPassword(sessionStorage.getItem('username'), sessionStorage.getItem('password'))
-					.then(function(response) {
-						console.log(response);
-				//get current user
 
-				firebase.auth().onAuthStateChanged(function(user) {
-					user.sendEmailVerification();
-				});
+			signUp: function() {
+				console.log("signup firebase");
+				this.$.authSecondary.createUserWithEmailAndPassword(sessionStorage.getItem('username'), sessionStorage.getItem('password')).then(function(response) {
+
+					var toaddUid = response.uid;
+
+					document.querySelector('rrsdas-sad').$.auth.signInWithEmailAndPassword(sessionStorage.getItem('adusername'), sessionStorage.getItem('adpassword'))
+					.then(function(response) {
+						var app = document.getElementById("firebaseApp").app;
+						var database = firebase.database(app);
+
+						database.ref('/Users/' + toaddUid).set({
+							deactivate: false,
+							email: sessionStorage.getItem('username'),
+							firstName : document.querySelector('na-users').$.firstName.value,
+							isAdmin: false,
+							lastName: document.querySelector('na-users').$.lastName.value
+						});
+
+						var user = document.querySelector('rrsdas-sad').$.auth.auth.currentUser;
+						user.sendEmailVerification().then(function() {
+						  console.log("Email sent");
+						}, function(error) {
+						  console.log("An error happened.");
+						});
+
 					})
 					.catch(function(error) {
-						console.log(error.code);
 						console.log(error.message);
-
-						var toast = document.getElementById("paper_toast");
-						toast.show(error.message);
 					});
-				}, */
+
+					document.querySelector('na-users').$.modal.close();
+
+					var toast = document.getElementById("paper_toast");
+					toast.show("Added User Successfully");
+
+				})
+				.catch(function(error) {
+					console.log(error.code);
+					console.log(error.message);
+
+					var toast = document.getElementById("paper_toast");
+					toast.show(error.message);
+				});
+			},
 
 			get usersPath() {
 				return '/Users/' + this.user.uid;
@@ -368,8 +409,6 @@
 				if (document.querySelector('na-users').addselector) {
 					document.querySelector('na-users').$.modal.open();
 				} else {
-					console.log("deleting...");
-
 					var app = document.getElementById("firebaseApp").app;
 					var database = firebase.database(app);
 
