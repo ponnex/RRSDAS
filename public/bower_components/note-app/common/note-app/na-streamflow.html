@@ -73,7 +73,11 @@
 
     paper-input {
       --paper-input-container-focus-color: #515C6B;
-      padding-left: 2%;
+      padding-right: 2%;
+    }
+
+    paper-dropdown-menu {
+      padding-right: 2%;
     }
 
     google-chart {
@@ -108,6 +112,16 @@
 
   <div id="pickercontainer" class="pickercontainer">
 
+    <paper-dropdown-menu label="Module" vertical-align="top" horizontal-align="right">
+      <paper-listbox class="dropdown-content" selected="0">
+
+        <template is="dom-repeat" items="[[modules]]" as="query">
+          <paper-item>[[query]]</paper-item>
+        </template>
+
+      </paper-listbox>
+    </paper-dropdown-menu>
+
     <paper-dropdown-menu label="Sort By" vertical-align="top" horizontal-align="right">
       <paper-listbox class="dropdown-content" selected="0">
         <paper-item>Monthly</paper-item>
@@ -116,20 +130,17 @@
       </paper-listbox>
     </paper-dropdown-menu>
 
-    <paper-input id="startInput" onclick="strmStartDialog.open()" value="[[dateFormat(startDate, 'LL')]]" label="Start" name="[[name]]">
-    <!--<paper-input id="startInput" onclick="dateDialog.open()" value="[[dateFormat(date, 'LL')]]" label="Start" name="[[name]]">-->
-      <iron-icon icon="icons:event" item-icon prefix>
-      </iron-icon>
-      <iron-icon icon="icons:arrow-drop-down" item-icon suffix>
-      </iron-icon>
-    </paper-input>
+    <paper-dropdown-menu id="startInput" label="Start" on-tap="strmStartDialogOpen">
+      <paper-listbox id="startList" class="dropdown-content" selected="0">
+        <paper-item id="startItem">[[dateFormat(startDate, 'LL')]]</paper-item>
+      </paper-listbox>
+    </paper-dropdown-menu>
 
-    <paper-input id="endInput" onclick="strmEndDialog.open()" value="[[dateFormat(endDate, 'LL')]]" label="End" name="[[name]]">
-      <iron-icon icon="icons:event" item-icon prefix>
-      </iron-icon>
-      <iron-icon icon="icons:arrow-drop-down" item-icon suffix>
-      </iron-icon>
-    </paper-input>
+    <paper-dropdown-menu id="endInput" label="End" on-tap="strmEndDialogOpen">
+      <paper-listbox id="endList" class="dropdown-content" selected="0">
+        <paper-item id="endItem">[[dateFormat(endDate, 'LL')]]</paper-item>
+      </paper-listbox>
+    </paper-dropdown-menu>
 
   </div>
 
@@ -184,6 +195,10 @@
       end: {
         type: Number,
         value: 0
+      },
+      modules: {
+        type: Object,
+        observer: 'dataChanged'
       }
     },
     listeners: {
@@ -215,6 +230,25 @@
         start = moment(prevMM).format('YYYY') + moment(prevMM).format('MM') + moment(prevMM).format('DD') + "00";
         end = moment(this.endDate).format('YYYY') + moment(this.endDate).format('MM') + moment(this.endDate).format('DD') + "23";
         this.isFirstTime = false;
+
+        var app = document.getElementById("firebaseApp").app;
+        var database = firebase.database(app);
+        var modulesArray = [];
+        var modulesCounter = 0;
+
+        database.ref('/Modules/Profiles/').orderByKey().once("value", function(snapshot) {
+
+          snapshot.forEach(function(childSnapshot) {
+            console.log(childSnapshot.key);
+            modulesArray[modulesCounter] = childSnapshot.child('name').val();
+            modulesCounter++;
+          });
+
+          console.log(modulesArray);
+          document.querySelector('na-streamflow').modules = modulesArray;
+
+        });
+
       } else {
         start = moment(this.startDate).format('YYYY') + moment(this.startDate).format('MM') + moment(this.startDate).format('DD') + "00";
         end = moment(this.endDate).format('YYYY') + moment(this.endDate).format('MM') + moment(this.endDate).format('DD') + "23";
@@ -279,11 +313,24 @@
     _onChartReady: function() {
 
     },
+    strmStartDialogOpen: function() {
+      this.$.startInput.close();
+      this.$.strmStartDialog.open();
+    },
+    strmEndDialogOpen: function() {
+      this.$.endInput.close();
+      this.$.strmEndDialog.open();
+    },
     strmStartDialogClosed: function() {
-
+      this.$.startList.selected = 1;
+      this.$.startList.selected = 0;
     },
     strmEndDialogClosed: function() {
 
+    },
+    dataChanged: function (newData, oldData) {
+      console.log(newData)
+      console.log(oldData);
     }
   });
   </script>

@@ -3,7 +3,7 @@
   "scope": "./",
   "start_url": "index.html",
   "display": "standalone",
-  "orientation": "any",
+  "orientation": "landscape",
   "theme_color": "#515C6B",
   "background_color": "#515C6B",
   "icons": [{

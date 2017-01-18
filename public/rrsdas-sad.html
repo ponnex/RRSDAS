@@ -53,13 +53,17 @@
 			paper-toolbar {
 				--paper-toolbar-background: #515C6B;
 			}
+			paper-toolbar ::shadow #topBar {
+				align-items: center;
+				@apply(--layout-center-center);
+			}
 		</style>
 
 		<paper-drawer-panel edge-swipe-sensitivity="15" force-narrow id="drawer" disable-swipe="[[!signedIn]]">
 
 			<paper-header-panel drawer id="drawer" class=container>
 				<paper-toolbar>
-					<div class="title">Menu</div>
+					<div>[[username]]</div>
 				</paper-toolbar>
 
 				<paper-listbox id="menuListbox" selected="0" on-iron-select="onItemSelected" class=flexchild>
@@ -196,7 +200,14 @@
 			behaviors: [
 				Polymer.NoteAppBehavior,
 			],
+			properties: {
+				username: {
+					type: String,
+					value: ''
+				}
+			},
 			ready: function() {
+				this.username = sessionStorage.getItem('username');
 				//get database
 				var app = document.getElementById("firebaseApp").app;
 				var database = firebase.database(app);
