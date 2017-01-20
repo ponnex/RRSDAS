@@ -239,12 +239,10 @@
         database.ref('/Modules/Profiles/').orderByKey().once("value", function(snapshot) {
 
           snapshot.forEach(function(childSnapshot) {
-            console.log(childSnapshot.key);
             modulesArray[modulesCounter] = childSnapshot.child('name').val();
             modulesCounter++;
           });
 
-          console.log(modulesArray);
           document.querySelector('na-streamflow').modules = modulesArray;
 
         });
@@ -329,8 +327,7 @@
 
     },
     dataChanged: function (newData, oldData) {
-      console.log(newData)
-      console.log(oldData);
+
     }
   });
   </script>

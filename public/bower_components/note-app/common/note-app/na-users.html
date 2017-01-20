@@ -2,6 +2,8 @@
 <link rel="import" href="/bower_components/paper-input/paper-input.html">
 <link rel="import" href="/bower_components/paper-button/paper-button.html">
 <link rel="import" href="/bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="/bower_components/iron-a11y-keys/iron-a11y-keys.html">
+
 <dom-module id="na-users">
   <template>
   <style>
@@ -60,10 +62,11 @@
       <paper-input id="firstName" label="First Name"></paper-input>
       <paper-input id="lastName" label="Last Name"></paper-input>
       <paper-input id="password" label="Password" required auto-validate error-message="should not be less than 6 characters" type="password" minlength="6"></paper-input>
+      <iron-a11y-keys id="a11y" target="[[target]]" keys="enter" on-keys-pressed="signUp"></iron-a11y-keys>
     </div>
     <div class="buttons">
       <paper-button dialog-dismiss>Cancel</paper-button>
-      <paper-button on-tap="signUp" type="submit">
+      <paper-button id="signUp"on-tap="signUp" type="submit">
   			<iron-icon icon="account-circle"></iron-icon>
   			<span>Add</span>
   		</paper-button>
@@ -95,7 +98,13 @@
       deleteEmail: {
         type: String,
         value: ""
-      }
+      },
+      target: {
+  	    type: Object,
+  	    value: function() {
+  	      return this.$.password;
+  	    }
+  	  }
     },
 
     ready: function() {
@@ -152,7 +161,7 @@
       });
 
       grid.addEventListener('selected-items-changed', function() {
-        if(grid.selection.selected() == "") {
+        if(grid.selection.selected() == "" || grid.selection.selected().length > 1) {
           document.querySelector('na-users').addselector = true;
           document.querySelector('rrsdas-sad').$.fab.style.background = "#515C6B"
           document.querySelector('rrsdas-sad').$.fab.icon = "add"
@@ -173,8 +182,8 @@
                 if (!childData['isAdmin'] && !childData['deactivate']) {
 
                   if(grid.selection.selected() == counter) {
-                    console.log(grid.selection.selected());
-                    console.log(key);
+                    //console.log(grid.selection.selected());
+                    //console.log(key);
                     document.querySelector('na-users').deletekey = key;
                     document.querySelector('na-users').deleteEmail = childData['email'];
                     return true;
@@ -202,10 +211,40 @@
     },
 
     signUp: function() {
-      console.log("singing...");
+      this.$.signUp.disabled = true;
+      this.$.modal.close();
   		sessionStorage.setItem('username', this.$.email.value);
   		sessionStorage.setItem('password', this.$.password.value);
-  		this.fire('sign-up', null, { bubbles: false });
+
+      var app = document.getElementById("firebaseApp").app;
+  		var database = firebase.database(app);
+      var updates = {};
+      var userDoesntExist = true;
+
+  		database.ref('/Users/').orderByKey().once("value", function(snapshot) {
+
+  			snapshot.forEach(function(childSnapshot) {
+
+  				if(childSnapshot.child('email').val() == document.querySelector('na-users').$.email.value) {
+            updates['/Users/' + childSnapshot.key + '/deactivate'] = false;
+            database.ref().update(updates);
+
+            var toast = document.getElementById("paper_toast");
+  					toast.show("Reactivated User Successfully");
+
+            userDoesntExist = false;
+            this.$.signUp.disabled = false;
+  				}
+
+  		  });
+
+  		});
+
+      if(userDoesntExist) {
+        this.fire('sign-up', null, { bubbles: false });
+        this.$.signUp.disabled = false;
+      }
+
   	}
 
   });
