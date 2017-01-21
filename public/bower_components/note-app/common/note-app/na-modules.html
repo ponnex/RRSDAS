@@ -1,3 +1,10 @@
+<link rel="import" href="/bower_components/vaadin-grid/vaadin-grid.html">
+<link rel="import" href="/bower_components/paper-input/paper-input.html">
+<link rel="import" href="/bower_components/paper-button/paper-button.html">
+<link rel="import" href="/bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="bower_components/iron-icons/hardware-icons.html">
+<link rel="import" href="/bower_components/iron-a11y-keys/iron-a11y-keys.html">
+
 <dom-module id="na-modules">
   <template>
   <style>
@@ -9,55 +16,206 @@
       left: 0;
       right: 0;
       bottom: 0;
-      color: #FFFFFF;
 
-      height: 100vh;
+      height: auto;
       width: auto;
-      margin: 0 2% 2% 2%;
+      margin: 2% 2% 2% 2%;
 
-      @apply(--layout);
-      @apply(--layout-horizontal);
+      @apply(--layout-vertical);
     }
-    .modules-card-div {
-      width: 100%;
-      height: fit-content;
-    }
-    .item-div {
-      @apply(--layout-flex);
-      margin: 1% 1% 1% 0;
-      display: inline-block;
-      width: fit-content;
-    }
-
     @media (max-width: 600px) {
   		:host {
   			 top: var(--calculated-paper-toolbar-sm-height);
   		}
   	}
+    .add-div {
+      @apply(--layout-vertical);
+    }
+    #sort {
+      height: 300px;
+      width: 100%;
+    }
+    #email {
+      @apply(--layout-flex);
+    }
+    vaadin-grid {
+      width: 100%;
+      height: 100%;
+    }
+    table {
+      width: 100%;
+      height: 100%;
+    }
+    paper-dialog {
+      border-radius: 5px;
+    }
+    .buttons {
+      font-weight: bold;
+    }
   </style>
-
-    <div class="modules-card-div">
-      <div class="item-div">
-        <na-modules-cards
-          id$="1"
-          image="Mang Kanor"
-          name="Longitude: 85.43 Latitude: 24.78">
-        </na-modules-cards>
-      </div>
-
-      <div class="item-div">
-        <na-modules-cards
-          id$="1"
-          image="Matanglawin"
-          name="Longitude: 85.43 Latitude: 24.78">
-        </na-modules-cards>
-      </div>
+  <paper-input id="filter" label="Filter by Name">
+    <iron-icon icon="icons:search" item-icon prefix></iron-icon>
+  </paper-input>
+  <paper-dialog id="modal" modal>
+    <h2>Add Module</h2>
+    <div class="add-div">
+      <paper-input autofocus id="name" label="Name"></paper-input>
+      <paper-input id="latitude" label="Latitude"></paper-input>
+      <paper-input id="longitude" label="Longitude"></paper-input>
+      <paper-input id="number" label="Number"></paper-input>
+      <iron-a11y-keys id="a11y" target="[[target]]" keys="enter" on-keys-pressed="addModule"></iron-a11y-keys>
     </div>
-
+    <div class="buttons">
+      <paper-button dialog-dismiss>Cancel</paper-button>
+      <paper-button id="addModule" on-tap="addModule" type="submit">
+  			<iron-icon icon="hardware:memory" item-icon></iron-icon>
+  			<span>Add</span>
+  		</paper-button>
+    </div>
+  </paper-dialog>
+  <vaadin-grid id="sort" style="height: 100%" selection-mode="multi">
+  <table>
+    <colgroup>
+      <col name="name" sortable/>
+      <col name="number" sortable/>
+      <col name="latitude" sortable/>
+      <col name="longitude" sortable/>
+    </colgroup>
+  </table>
+  </vaadin-grid>
   </template>
+  <script src="https://cdn.vaadin.com/vaadin-core-elements/latest/webcomponentsjs/webcomponents-lite.min.js"></script>
   <script>
   Polymer({
-    is: 'na-modules'
+    is: 'na-modules',
+    properties: {
+      addselector: {
+        type: Boolean,
+        value: true
+      },
+      deletekey: {
+        type: String,
+        value: ""
+      },
+      deleteModule: {
+        type: String,
+        value: ""
+      },
+      target: {
+  	    type: Object,
+  	    value: function() {
+  	      return this.$.number;
+  	    }
+  	  }
+    },
+
+    ready: function() {
+      var dataTable = "";
+      var obj = "";
+      var name = [];
+      var app = document.getElementById("firebaseApp").app;
+      var database = firebase.database(app);
+
+      database.ref('/Modules/Profiles/').orderByKey().on("value", function(snapshot) {
+        var counter = 0;
+        snapshot.forEach(function(childSnapshot) {
+          name[counter] = childSnapshot.val();
+          counter++;
+        });
+
+        document.querySelector('na-modules').drawTable(name);
+        name = [];
+      });
+
+    },
+
+    drawTable: function(name) {
+      var grid = document.querySelector('na-modules').$.sort;
+      grid.items = name;
+
+      grid.addEventListener('sort-order-changed', function() {
+        var sortOrder = grid.sortOrder[0];
+        var sortProperty = grid.columns[sortOrder.column].name;
+        var sortDirection = sortOrder.direction;
+        grid.items.sort(function(a, b) {
+          var res;
+          var path = sortProperty.split('.');
+          for (var i = 0; i < path.length; i++) {
+            a = a[path[i]];
+            b = b[path[i]];
+          }
+          if (!isNaN(a)) {
+            res = parseInt(a, 10) - parseInt(b, 10);
+          } else {
+            res = a.localeCompare(b);
+          }
+
+          if ('desc' === sortDirection) {
+            res *= -1;
+          }
+          return res;
+        });
+      });
+
+      grid.addEventListener('selected-items-changed', function() {
+        if(grid.selection.selected() == "" || grid.selection.selected().length > 1) {
+          document.querySelector('na-modules').addselector = true;
+          document.querySelector('rrsdas-sad').$.fab.style.background = "#515C6B"
+          document.querySelector('rrsdas-sad').$.fab.icon = "add"
+        } else {
+          document.querySelector('na-modules').addselector = false;
+          document.querySelector('rrsdas-sad').$.fab.style.background = "#FF0000"
+          document.querySelector('rrsdas-sad').$.fab.icon = "delete"
+
+          var app = document.getElementById("firebaseApp").app;
+          var database = firebase.database(app);
+
+          var query = database.ref('/Modules/Profiles/').orderByKey();
+          query.on("value", function(snapshot) {
+              var counter = 0;
+              snapshot.forEach(function(childSnapshot) {
+                var key = childSnapshot.key;
+                if(grid.selection.selected() == counter) {
+                  document.querySelector('na-modules').deletekey = key;
+                  console.log(document.querySelector('na-modules').deletekey);
+                  return true;
+                }
+
+                counter++;
+            });
+          });
+        }
+      });
+
+      var filterInput = document.querySelector('na-modules').$.filter;
+      filterInput.addEventListener('value-changed', function() {
+        var filterText = filterInput.value.toLowerCase();
+        grid.items = name.filter(function(val) {
+          if (filterText) {
+            return (val.name.toLowerCase()).indexOf(filterText) > -1;
+          } else {
+            return true;
+          }
+        });
+      });
+    },
+
+    addModule: function() {
+      this.$.addModule.disabled = true;
+      this.$.modal.close();
+
+      var app = document.getElementById("firebaseApp").app;
+  		var database = firebase.database(app);
+
+      database.ref('/Modules/Profiles/' + '"' + this.$.number.value  + '"/').set({
+        latitude : document.querySelector('na-modules').$.latitude.value,
+        longitude : document.querySelector('na-modules').$.longitude.value,
+        name: document.querySelector('na-modules').$.name.value,
+        number: document.querySelector('na-modules').$.number.value
+      });
+
+  	}
+
   });
   </script>
 </dom-module>

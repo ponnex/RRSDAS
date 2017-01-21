@@ -260,7 +260,7 @@
       var csv = '';
 
       database.ref('/Modules/Data/').orderByKey().startAt(start).endAt(end).on('child_added', function(snapshot) {
-        var day = moment(snapshot.key).format('MMM-Do-YY');
+        var day = moment(snapshot.key).format('MMM-Do');
 
         snapshot.forEach(function(childSnapshot) {
           if(childSnapshot.child('rainflow').val() != '') {

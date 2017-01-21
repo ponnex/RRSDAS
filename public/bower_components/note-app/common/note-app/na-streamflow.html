@@ -151,7 +151,7 @@
         type='line'
         options='{"title": "Stream Flow"}'
         cols='[{"label":"Date", "type":"string"}, {"label":"Flow Duration Curve", "type":"number"}]'
-        rows='[["Monday", 0],["Tuesday", 0],["Wednesday", 0]]'>
+        rows='[[" ", 0],[" ", 0],[" ", 0]]'>
       </google-chart>
     </div>
     <div class="modules-summary-div">
@@ -261,7 +261,7 @@
       var csv = '';
 
       database.ref('/Modules/Data/').orderByKey().startAt(start).endAt(end).on('child_added', function(snapshot) {
-        var day = moment(snapshot.key).format('MMM-Do-YY');
+        var day = moment(snapshot.key).format('MMM-Do');
 
         snapshot.forEach(function(childSnapshot) {
           if(childSnapshot.child('strmflow').val() != '') {
