@@ -66,7 +66,6 @@
       var database = firebase.database(app);
 
       database.ref('/Modules/Profiles/').orderByKey().on('child_added', function(snapshot) {
-        console.log("child_added");
         var marker = document.createElement('google-map-marker');
         marker.longitude = snapshot.child('longitude').val();
         marker.latitude = snapshot.child('latitude').val();
@@ -80,7 +79,6 @@
       var database = firebase.database(app);
 
       database.ref('/Modules/Profiles/').orderByKey().on('child_removed', function(snapshot) {
-        console.log("child_removed");
         document.querySelector('na-map').$.gmap.clear();
         document.querySelector('na-map')._onMapReady();
       });

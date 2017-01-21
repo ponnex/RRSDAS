@@ -1,5 +1,4 @@
 <link rel="import" href="bower_components/note-app/common/note-app/na-elements.html">
-<link rel="import" href="bower_components/app-storage/app-indexeddb-mirror/app-indexeddb-mirror.html">
 <link rel="import" href="bower_components/polymerfire/polymerfire.html">
 <link rel="import" href="bower_components/paper-drawer-panel/paper-drawer-panel.html">
 <link rel="import" href="bower_components/paper-toolbar/paper-toolbar.html">
@@ -11,6 +10,7 @@
 <link rel="import" href="bower_components/iron-icons/social-icons.html">
 <link rel="import" href="bower_components/iron-icons/maps-icons.html">
 <link rel="import" href="bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="bower_components/iron-localstorage/iron-localstorage.html">
 <link rel="import" href="bower_components/iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="bower_components/google-chart/google-chart.html">
@@ -63,7 +63,7 @@
 
 			<paper-header-panel drawer id="drawer" class=container>
 				<paper-toolbar>
-					<div>[[username]]</div>
+					<div>[[username.name]]</div>
 				</paper-toolbar>
 
 				<paper-listbox id="menuListbox" selected="0" on-iron-select="onItemSelected" class=flexchild>
@@ -80,7 +80,7 @@
 					Map
 					</paper-icon-item>
 					<paper-icon-item id="itemUsers"
-						hidden=true>
+						hidden=[[username.userHidden]]>
 					<iron-icon icon="social:person" item-icon></iron-icon>
 					Users
 					</paper-icon-item>
@@ -115,45 +115,14 @@
 					disabled="[[!online]]">
 				</na-login>
 
-				<!--<na-editor
-					id="editor"
-					note="{{editableNote}}"
-					on-close="commitChange">
-				</na-editor>-->
-
 				<paper-fab
 					id="fab"
 					icon="add"
 					on-tap="fabAction"
 					disabled="[[!online]]"
-					hidden=true
+					hidden="true"
 					aria-label="Add note">
 				</paper-fab>
-
-				<!--<div class="notes">
-					<template is="dom-repeat" items="[[persistedNotes]]" as="note">
-					<na-note
-						id$="[[note.name]]"
-						title="[[note.email]]"
-						body="[[note.isAdmin]]"
-						on-tap="edit">
-					</na-note>
-					</template>
-				</div>-->
-
-				<!--<firebase-document
-					id="document"
-					app-name="rrsdas-sad"
-					path="[[editableNoteId]]"
-					data="{{editableNote}}">
-				</firebase-document>-->
-
-				<!--<firebase-query
-					id="query"
-					app-name="rrsdas-sad"
-					path="/Users/[[user.uid]]"
-					data="{{data}}">
-				</firebase-query>-->
 
 				<firebase-auth
 					id="auth"
@@ -169,12 +138,10 @@
 					provider="password">
 				</firebase-auth>
 
-				<!--<app-indexeddb-mirror
-					session="[[user.uid]]"
-					key="rrsdas-sad"
-					data="{{data}}"
-					persisted-data="{{persistedNotes}}">
-				</app-indexeddb-mirror>-->
+				<iron-localstorage name="username-storage"
+			    value="{{username}}"
+			    on-iron-localstorage-load-empty="initializeDefaultUsername">
+				</iron-localstorage>
 
 				<paper-toast id="paper_toast" alwaysOnTop="true" duration="6000"></paper-toast>
 
@@ -202,13 +169,10 @@
 			],
 			properties: {
 				username: {
-					type: String,
-					value: ''
+					type: Object
 				}
 			},
 			ready: function() {
-				console.log("ready");
-				this.username = sessionStorage.getItem('username');
 				//get database
 				var app = document.getElementById("firebaseApp").app;
 				var database = firebase.database(app);
@@ -217,22 +181,31 @@
 					database.ref('/Users/' + sessionStorage.getItem('currentUserUID') + '/isAdmin').on('value', function(snapshot) {
 						var isAdmin = snapshot.val();
 						if (isAdmin) {
-							document.querySelector('rrsdas-sad').admin = true;
-							document.querySelector('rrsdas-sad').$.fab.hidden = false;
-							document.querySelector('rrsdas-sad').$.itemUsers.hidden = false;
+							document.querySelector('rrsdas-sad').set('username.admin', true);
+							document.querySelector('rrsdas-sad').set('username.userHidden', false);
 						} else {
-							document.querySelector('rrsdas-sad').admin = false;
+							document.querySelector('rrsdas-sad').set('username.admin', false);
 							document.querySelector('rrsdas-sad').$.fab.hidden = true;
-							document.querySelector('rrsdas-sad').$.itemUsers.hidden = true;
+							document.querySelector('rrsdas-sad').set('username.userHidden', true);
 						}
 					});
 				} else {
 						console.log("User is logged out");
 				}
+
+			},
+			initializeDefaultUsername: function() {
+				this.username = {
+	        name: "Hello User!",
+					admin: false,
+					userHidden: true
+	      }
 			},
 			signIn: function() {
 				this.$.auth.signInWithEmailAndPassword(sessionStorage.getItem('username'), sessionStorage.getItem('password'))
 					.then(function(response) {
+
+						document.querySelector('rrsdas-sad').set('username.name', sessionStorage.getItem('username'));
 
 						document.querySelector('na-login').$.username.value = null;
 						document.querySelector('na-login').$.password.value = null;
@@ -255,21 +228,11 @@
 						database.ref('/Users/' + currentUser.uid + '/isAdmin').once('value').then(function(snapshot) {
 							var isAdmin = snapshot.val();
 							if (isAdmin) {
-								document.querySelector('rrsdas-sad').admin = true;
-								//document.querySelector('rrsdas-sad').$.fab.hidden = false;
+								document.querySelector('rrsdas-sad').set('username.admin', true);
+								document.querySelector('rrsdas-sad').$.fab.hidden = true;
 								document.querySelector('rrsdas-sad').$.itemUsers.hidden = false;
-
-								document.querySelector('rrsdas-sad').$.auth.auth.onAuthStateChanged(function(user) {
-									if (user.emailVerified) {
-										console.log('Email is verified');
-									}
-									else {
-										console.log('Email is not verified');
-									}
-								});
-
 							} else {
-								document.querySelector('rrsdas-sad').admin = false;
+								document.querySelector('rrsdas-sad').set('username.admin', false);
 								document.querySelector('rrsdas-sad').$.fab.hidden = true;
 								document.querySelector('rrsdas-sad').$.itemUsers.hidden = true;
 							}
@@ -400,7 +363,7 @@
 
 			onItemSelected: function() {
 
-				if (document.querySelector('rrsdas-sad').admin == true) {
+				if (this.get('username.admin') == true) {
 					if (this.$.menuListbox.selected != 1 && this.$.menuListbox.selected != 3) {
 						document.querySelector('rrsdas-sad').$.fab.hidden = true;
 					} else {
