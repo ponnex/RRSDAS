@@ -50,8 +50,7 @@
 
     .graph-div {
       height: auto;
-      width: 68%;
-      padding-right: 2%;
+      width: 100%;
     }
     .modules-summary-div {
       height: auto;
@@ -113,7 +112,7 @@
   <div id="pickercontainer" class="pickercontainer">
 
     <paper-dropdown-menu label="Module" vertical-align="top" horizontal-align="right">
-      <paper-listbox class="dropdown-content" selected="0">
+      <paper-listbox id="moduleSelector" class="dropdown-content" selected="0">
 
         <template is="dom-repeat" items="[[modules]]" as="query">
           <paper-item>[[query]]</paper-item>
@@ -122,13 +121,13 @@
       </paper-listbox>
     </paper-dropdown-menu>
 
-    <paper-dropdown-menu label="Sort By" vertical-align="top" horizontal-align="right">
+    <!--<paper-dropdown-menu label="Sort By" vertical-align="top" horizontal-align="right">
       <paper-listbox class="dropdown-content" selected="0">
         <paper-item>Monthly</paper-item>
         <paper-item>Weekly</paper-item>
         <paper-item>Daily</paper-item>
       </paper-listbox>
-    </paper-dropdown-menu>
+    </paper-dropdown-menu>-->
 
     <paper-dropdown-menu id="startInput" label="Start" on-tap="strmStartDialogOpen">
       <paper-listbox id="startList" class="dropdown-content" selected="0">
@@ -154,7 +153,7 @@
         rows='[[" ", 0],[" ", 0],[" ", 0]]'>
       </google-chart>
     </div>
-    <div class="modules-summary-div">
+    <!--<div class="modules-summary-div">
       <google-chart
         id="chartline2"
         type='line'
@@ -162,7 +161,7 @@
         cols='[{"label":"Hour", "type":"number"}, {"label":"M1", "type":"number"}, {"label":"M2", "type":"number"}]'
         rows='[[0, 0, 0],[0, 0, 0],[0, 0, 0]]'>
       </google-chart>
-    </div>
+    </div>-->
   </div>
 
   <iron-signals on-iron-signal-downloadstrm="downloadCsv"></iron-signals>
@@ -199,11 +198,50 @@
       modules: {
         type: Object,
         observer: 'dataChanged'
+      },
+      key: {
+        type: Object,
+        observer: 'dataChanged'
+      },
+      moduleSelected: {
+        type: String,
+        value: ""
       }
     },
     listeners: {
       'iron-resize': '_onIronResize',
-      'google-chart-ready': '_onChartReady'
+      'google-chart-ready': '_onChartReady',
+      'iron-select': '_onModuleSelect'
+    },
+    ready: function() {
+      var start = this.$.startInput.value;
+      var end = this.$.endInput.value;
+      var prevMM = moment(moment().subtract(1, 'month').calendar());
+
+      start = moment(prevMM).format('YYYY') + moment(prevMM).format('MM') + moment(prevMM).format('DD') + "00";
+      end = moment(this.endDate).format('YYYY') + moment(this.endDate).format('MM') + moment(this.endDate).format('DD') + "23";
+
+      this.$.startItem.innerHTML = moment(start).format('LL');
+      this.$.endItem.innerHTML = moment(end).format('LL');
+
+      var app = document.getElementById("firebaseApp").app;
+      var database = firebase.database(app);
+      var modulesArray = [];
+      var keyArray = [];
+      var modulesCounter = 0;
+
+      database.ref('/Modules/Profiles/').orderByKey().once("value", function(snapshot) {
+
+        snapshot.forEach(function(childSnapshot) {
+          modulesArray[modulesCounter] = childSnapshot.child('name').val();
+          keyArray[modulesCounter] = childSnapshot.key;
+          modulesCounter++;
+        });
+
+        document.querySelector('na-streamflow').modules = modulesArray;
+        document.querySelector('na-streamflow').key = keyArray;
+
+      });
     },
     checkCsv: function() {
       if(this.isCsvReady) {
@@ -223,34 +261,15 @@
       this.$.chartline2.redraw();
     },
     dateFormat: function(date, format) {
+      this.getData();
+      return moment(date).format(format);
+    },
+    getData: function() {
       var start = this.$.startInput.value;
       var end = this.$.endInput.value;
-      if (this.isFirstTime) {
-        var prevMM = moment(moment().subtract(1, 'month').calendar());
-        start = moment(prevMM).format('YYYY') + moment(prevMM).format('MM') + moment(prevMM).format('DD') + "00";
-        end = moment(this.endDate).format('YYYY') + moment(this.endDate).format('MM') + moment(this.endDate).format('DD') + "23";
-        this.isFirstTime = false;
 
-        var app = document.getElementById("firebaseApp").app;
-        var database = firebase.database(app);
-        var modulesArray = [];
-        var modulesCounter = 0;
-
-        database.ref('/Modules/Profiles/').orderByKey().once("value", function(snapshot) {
-
-          snapshot.forEach(function(childSnapshot) {
-            modulesArray[modulesCounter] = childSnapshot.child('name').val();
-            modulesCounter++;
-          });
-
-          document.querySelector('na-streamflow').modules = modulesArray;
-
-        });
-
-      } else {
-        start = moment(this.startDate).format('YYYY') + moment(this.startDate).format('MM') + moment(this.startDate).format('DD') + "00";
-        end = moment(this.endDate).format('YYYY') + moment(this.endDate).format('MM') + moment(this.endDate).format('DD') + "23";
-      }
+      start = moment(this.startDate).format('YYYY') + moment(this.startDate).format('MM') + moment(this.startDate).format('DD') + "00";
+      end = moment(this.endDate).format('YYYY') + moment(this.endDate).format('MM') + moment(this.endDate).format('DD') + "23";
 
       var app = document.getElementById("firebaseApp").app;
       var database = firebase.database(app);
@@ -271,17 +290,20 @@
             document.querySelector('na-toolbar').$.downloadCsv.hidden = true;
             document.querySelector('na-streamflow').isCsvReady = false;
           }
-          addition = childSnapshot.child('strmflow').val();
-          var data = [day, addition];
-          if (strmCounter == 0) {
-            csv = moment(snapshot.key).format('MMMM Do YYYY') + ',' + '\r\n' + "Day,Time, Streamflow\r\n";
-          }
-          csv += moment(snapshot.key).format('dddd, h:mm:ss a') + ',' + addition + '\r\n';
-          document.querySelector('na-streamflow').csvData = csv;
 
-          stream[strmCounter] = data;
-          strmCounter++;
-          this.isCsvReady = true;
+          if(childSnapshot.key == document.querySelector('na-streamflow').key[document.querySelector('na-streamflow').moduleSelected]) {
+            addition = childSnapshot.child('strmflow').val();
+            var data = [day, addition];
+            if (strmCounter == 0) {
+              csv = moment(snapshot.key).format('MMMM Do YYYY') + ',' + '\r\n' + "Day,Time, Streamflow\r\n";
+            }
+            csv += moment(snapshot.key).format('dddd, h:mm:ss a') + ',' + addition + '\r\n';
+            document.querySelector('na-streamflow').csvData = csv;
+
+            stream[strmCounter] = data;
+            strmCounter++;
+            this.isCsvReady = true;
+          }
         });
         document.getElementById("strmflow").rows = stream;
       });
@@ -289,10 +311,7 @@
       strmCounter = 0;
       this.$.strmStartDialog.close();
       this.$.strmEndDialog.close();
-
-      return moment(date).format(format);
     },
-
     toCsv: function(filename, text) {
         var pom = document.createElement('a');
         pom.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(text));
@@ -328,6 +347,10 @@
     },
     dataChanged: function (newData, oldData) {
 
+    },
+    _onModuleSelect: function() {
+      this.moduleSelected = this.$.moduleSelector.selected;
+      this.getData();
     }
   });
   </script>
