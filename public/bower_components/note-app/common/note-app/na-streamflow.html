@@ -167,10 +167,6 @@
       Polymer.IronResizableBehavior
     ],
     properties: {
-      isFirstTime: {
-        type: Boolean,
-        value: true
-      },
       isCsvReady: {
         type: Boolean,
         value: false
@@ -206,7 +202,6 @@
       'iron-select': '_onModuleSelect'
     },
     ready: function() {
-      console.log("ready");
       var start = this.$.startInput.value;
       var end = this.$.endInput.value;
       var prevMM = moment(moment().subtract(1, 'month').calendar());
@@ -275,13 +270,6 @@
         var day = moment(snapshot.key).format('MMM-Do');
 
         snapshot.forEach(function(childSnapshot) {
-          if(childSnapshot.child('strmflow').val() != '') {
-            document.querySelector('na-toolbar').$.downloadCsv.hidden = false;
-            document.querySelector('na-streamflow').isCsvReady = true;
-          } else if (childSnapshot.child('strmflow').val() == ''){
-            document.querySelector('na-toolbar').$.downloadCsv.hidden = true;
-            document.querySelector('na-streamflow').isCsvReady = false;
-          }
 
           if(childSnapshot.key == document.querySelector('na-streamflow').key[document.querySelector('na-streamflow').moduleSelected]) {
             addition = childSnapshot.child('strmflow').val();
@@ -294,8 +282,16 @@
 
             stream[strmCounter] = data;
             strmCounter++;
-            this.isCsvReady = true;
+
+            if(childSnapshot.child('strmflow').val() != '') {
+              document.querySelector('na-toolbar').$.downloadCsv.hidden = false;
+              document.querySelector('na-streamflow').isCsvReady = true;
+            } else if (childSnapshot.child('strmflow').val() == ''){
+              document.querySelector('na-toolbar').$.downloadCsv.hidden = true;
+              document.querySelector('na-streamflow').isCsvReady = false;
+            }
           }
+
         });
         document.getElementById("strmflow").rows = stream;
       });

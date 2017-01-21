@@ -194,6 +194,14 @@
 				}
 
 			},
+			attached: function() {
+				document.querySelector('rrsdas-sad').ready();
+				document.querySelector('na-streamflow').ready();
+				document.querySelector('na-rainflow').ready();
+				document.querySelector('na-map').ready();
+				document.querySelector('na-modules').ready();
+				document.querySelector('na-users').ready();
+			},
 			initializeDefaultUsername: function() {
 				this.username = {
 	        name: "Hello User!",
@@ -369,11 +377,12 @@
 					} else {
 						document.querySelector('rrsdas-sad').$.fab.hidden = false;
 					}
-					if (this.$.menuListbox.selected != 0) {
-						document.querySelector('na-toolbar').$.downloadCsv.hidden = true;
-					} else {
-						document.querySelector('na-toolbar').$.downloadCsv.hidden = false;
-					}
+				}
+
+				if (this.$.menuListbox.selected != 0 || !document.querySelector('na-streamflow').isCsvReady || !document.querySelector('na-rainflow').isCsvReady) {
+					document.querySelector('na-toolbar').$.downloadCsv.hidden = true;
+				} else if (this.$.menuListbox.selected == 0 && document.querySelector('na-streamflow').isCsvReady && document.querySelector('na-rainflow').isCsvReady) {
+					document.querySelector('na-toolbar').$.downloadCsv.hidden = false;
 				}
 
 				this.$.pages.selectIndex(this.$.menuListbox.selected);

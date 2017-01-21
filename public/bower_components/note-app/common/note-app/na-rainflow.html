@@ -167,10 +167,6 @@
       Polymer.IronResizableBehavior
     ],
     properties: {
-      isFirstTime: {
-        type: Boolean,
-        value: true
-      },
       isCsvReady: {
         type: Boolean,
         value: false
@@ -206,7 +202,6 @@
       'iron-select': '_onModuleSelect'
     },
     ready: function() {
-      console.log("ready");
       var start = this.$.startInput.value;
       var end = this.$.endInput.value;
       var prevMM = moment(moment().subtract(1, 'month').calendar());
@@ -266,7 +261,7 @@
       var app = document.getElementById("firebaseApp").app;
       var database = firebase.database(app);
 
-      var stream = [];
+      var rain = [];
       var rainCounter = 0;
       var addition = 0;
       var csv = '';
@@ -275,13 +270,6 @@
         var day = moment(snapshot.key).format('MMM-Do');
 
         snapshot.forEach(function(childSnapshot) {
-          if(childSnapshot.child('rainflow').val() != '') {
-            document.querySelector('na-toolbar').$.downloadCsv.hidden = false;
-            document.querySelector('na-rainflow').isCsvReady = true;
-          } else if (childSnapshot.child('rainflow').val() == ''){
-            document.querySelector('na-toolbar').$.downloadCsv.hidden = true;
-            document.querySelector('na-rainflow').isCsvReady = false;
-          }
 
           if(childSnapshot.key == document.querySelector('na-rainflow').key[document.querySelector('na-rainflow').moduleSelected]) {
             addition = childSnapshot.child('rainflow').val();
@@ -292,12 +280,20 @@
             csv += moment(snapshot.key).format('dddd, h:mm:ss a') + ',' + addition + '\r\n';
             document.querySelector('na-rainflow').csvData = csv;
 
-            stream[rainCounter] = data;
+            rain[rainCounter] = data;
             rainCounter++;
-            this.isCsvReady = true;
+
+            if(childSnapshot.child('rainflow').val() != '') {
+              document.querySelector('na-toolbar').$.downloadCsv.hidden = false;
+              document.querySelector('na-rainflow').isCsvReady = true;
+            } else if (childSnapshot.child('rainflow').val() == ''){
+              document.querySelector('na-toolbar').$.downloadCsv.hidden = true;
+              document.querySelector('na-rainflow').isCsvReady = false;
+            }
           }
+
         });
-        document.getElementById("rainflow").rows = stream;
+        document.getElementById("rainflow").rows = rain;
       });
 
       rainCounter = 0;

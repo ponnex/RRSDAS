@@ -110,16 +110,14 @@ Polymer({
 			value: false
 		}
 	},
-
 	computeLockIcon: function(signedIn) {
 		return signedIn ? 'lock-open' : 'lock';
 	},
-
 	lock: function() {
 		this.fire('sign-out');
-
 		document.querySelector('rrsdas-sad').$.fab.hidden = true;
-		document.querySelector('na-toolbar').$.downloadCsv.hidden = true;
+		
+		this.$.downloadCsv.hidden = true;
 
 		document.querySelector('na-login').$.password.autoValidate = true;
 
