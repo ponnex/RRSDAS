@@ -207,6 +207,7 @@
 				}
 			},
 			ready: function() {
+				console.log("ready");
 				this.username = sessionStorage.getItem('username');
 				//get database
 				var app = document.getElementById("firebaseApp").app;
@@ -332,6 +333,13 @@
 							sessionStorage.setItem('adpassword', sessionStorage.getItem('password'));
 						}
 
+						document.querySelector('rrsdas-sad').ready();
+						document.querySelector('na-streamflow').ready();
+						document.querySelector('na-rainflow').ready();
+						document.querySelector('na-map').ready();
+						document.querySelector('na-modules').ready();
+						document.querySelector('na-users').ready();
+
 					})
 					.catch(function(error) {
 						console.log(error.code);
@@ -390,14 +398,6 @@
 				});
 			},
 
-			get usersPath() {
-				return '/Users/' + this.user.uid;
-			},
-
-			toEditableId: function() {
-				return this.usersPath;
-			},
-
 			onItemSelected: function() {
 
 				if (document.querySelector('rrsdas-sad').admin == true) {
@@ -438,7 +438,6 @@
 						database.ref().update(updates);
 					}
 				}
-
 
 			}
 

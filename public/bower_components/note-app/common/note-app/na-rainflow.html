@@ -94,19 +94,11 @@
   <paper-dialog id="rainStartDialog" style="margin: 15px 15px 15px 15px" class="paper-date-picker-dialog" with-backdrop
     on-iron-overlay-closed="rainStartDialogClosed">
     <paper-date-picker id="startPicker" date="{{startDate}}"></paper-date-picker>
-    <!--<div class="buttons">
-      <paper-button dialog-dismiss>Cancel</paper-button>
-      <paper-button dialog-confirm>OK</paper-button>
-    </div>-->
   </paper-dialog>
 
   <paper-dialog id="rainEndDialog" style="margin: 15px 15px 15px 15px" class="paper-date-picker-dialog" with-backdrop
     on-iron-overlay-closed="rainEndDialogClosed">
     <paper-date-picker id="endPicker" date="{{endDate}}" responsive-width="600px"></paper-date-picker>
-    <!--<div class="buttons">
-      <paper-button dialog-dismiss>Cancel</paper-button>
-      <paper-button dialog-confirm>OK</paper-button>
-    </div>-->
   </paper-dialog>
 
   <div id="pickercontainer" class="pickercontainer">
@@ -214,6 +206,7 @@
       'iron-select': '_onModuleSelect'
     },
     ready: function() {
+      console.log("ready");
       var start = this.$.startInput.value;
       var end = this.$.endInput.value;
       var prevMM = moment(moment().subtract(1, 'month').calendar());
@@ -258,7 +251,6 @@
     },
     _onIronResize: function() {
       this.$.rainflow.redraw();
-      this.$.chartline2.redraw();
     },
     dateFormat: function(date, format) {
       this.getData();

@@ -65,17 +65,6 @@
       var app = document.getElementById("firebaseApp").app;
       var database = firebase.database(app);
 
-      database.ref('/Modules/Profiles/').orderByKey().on('child_removed', function(snapshot) {
-        console.log("child_removed");
-        document.querySelector('na-map').$.gmap.clear();
-        document.querySelector('na-map')._onMapReady();
-      });
-
-    },
-    _onMapReady: function() {
-      var app = document.getElementById("firebaseApp").app;
-      var database = firebase.database(app);
-
       database.ref('/Modules/Profiles/').orderByKey().on('child_added', function(snapshot) {
         console.log("child_added");
         var marker = document.createElement('google-map-marker');
@@ -85,7 +74,16 @@
         marker.innerHTML = snapshot.child('name').val() + '\r\n' + snapshot.child('latitude').val() + '\r\n' + snapshot.child('longitude').val();
         Polymer.dom(document.querySelector('na-map').$.gmap).appendChild(marker);
       });
+    },
+    _onMapReady: function() {
+      var app = document.getElementById("firebaseApp").app;
+      var database = firebase.database(app);
 
+      database.ref('/Modules/Profiles/').orderByKey().on('child_removed', function(snapshot) {
+        console.log("child_removed");
+        document.querySelector('na-map').$.gmap.clear();
+        document.querySelector('na-map')._onMapReady();
+      });
     },
     displayMarkers: function() {
 
