@@ -58,15 +58,15 @@
   <paper-dialog id="modal" modal>
     <h2>Add User</h2>
     <div class="add-div">
-      <paper-input autofocus id="email" label="Email"></paper-input>
-      <paper-input id="firstName" label="First Name"></paper-input>
-      <paper-input id="lastName" label="Last Name"></paper-input>
-      <paper-input id="password" label="Password" required auto-validate error-message="should not be less than 6 characters" type="password" minlength="6"></paper-input>
+      <paper-input autofocus id="email" label="Email" on-value-changed="_inputChanged"></paper-input>
+      <paper-input id="firstName" label="First Name" on-value-changed="_inputChanged"></paper-input>
+      <paper-input id="lastName" label="Last Name" on-value-changed="_inputChanged"></paper-input>
+      <paper-input id="password" label="Password" required auto-validate error-message="should not be less than 6 characters" type="password" minlength="6" on-value-changed="_inputChanged"></paper-input>
       <iron-a11y-keys id="a11y" target="[[target]]" keys="enter" on-keys-pressed="signUp"></iron-a11y-keys>
     </div>
     <div class="buttons">
       <paper-button dialog-dismiss>Cancel</paper-button>
-      <paper-button id="signUp"on-tap="signUp" type="submit">
+      <paper-button id="signUp" on-tap="signUp" type="submit" disabled="true">
   			<iron-icon icon="account-circle"></iron-icon>
   			<span>Add</span>
   		</paper-button>
@@ -231,7 +231,7 @@
   					toast.show("Reactivated User Successfully");
 
             userDoesntExist = false;
-            this.$.signUp.disabled = false;
+            document.querySelector('na-users').$.signUp.disabled = false;
   				}
 
   		  });
@@ -243,7 +243,15 @@
         this.$.signUp.disabled = false;
       }
 
-  	}
+  	},
+    _inputChanged: function() {
+      if(this.$.email.value == "" || this.$.firstName.value == "" || this.$.lastName.value == "" || this.$.password.value == "") {
+        this.$.signUp.disabled = true;
+      }
+      if(this.$.email.value != "" && this.$.firstName.value != "" && this.$.lastName.value != "" && this.$.password.value != "") {
+        this.$.signUp.disabled = false;
+      }
+    }
 
   });
   </script>

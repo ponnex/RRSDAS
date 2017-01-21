@@ -59,15 +59,15 @@
   <paper-dialog id="modal" modal>
     <h2>Add Module</h2>
     <div class="add-div">
-      <paper-input autofocus id="name" label="Name"></paper-input>
-      <paper-input id="latitude" label="Latitude"></paper-input>
-      <paper-input id="longitude" label="Longitude"></paper-input>
-      <paper-input id="number" label="Number"></paper-input>
+      <paper-input autofocus id="name" label="Name" on-value-changed="_inputChanged"></paper-input>
+      <paper-input id="latitude" label="Latitude" on-value-changed="_inputChanged"></paper-input>
+      <paper-input id="longitude" label="Longitude" on-value-changed="_inputChanged"></paper-input>
+      <paper-input id="number" label="Number" on-value-changed="_inputChanged"></paper-input>
       <iron-a11y-keys id="a11y" target="[[target]]" keys="enter" on-keys-pressed="addModule"></iron-a11y-keys>
     </div>
     <div class="buttons">
       <paper-button dialog-dismiss>Cancel</paper-button>
-      <paper-button id="addModule" on-tap="addModule" type="submit">
+      <paper-button id="addModule" on-tap="addModule" type="submit" disabled="true">
   			<iron-icon icon="hardware:memory" item-icon></iron-icon>
   			<span>Add</span>
   		</paper-button>
@@ -214,7 +214,15 @@
         number: document.querySelector('na-modules').$.number.value
       });
 
-  	}
+  	},
+    _inputChanged: function() {
+      if(this.$.name.value == "" || this.$.latitude.value == "" || this.$.longitude.value == "" || this.$.number.value == "") {
+        this.$.addModule.disabled = true;
+      }
+      if(this.$.name.value != "" && this.$.latitude.value != "" && this.$.longitude.value != "" && this.$.number.value != "") {
+        this.$.addModule.disabled = false;
+      }
+    }
 
   });
   </script>
