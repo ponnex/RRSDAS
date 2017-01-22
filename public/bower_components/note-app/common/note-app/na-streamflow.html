@@ -251,6 +251,33 @@
       this.getData();
       return moment(date).format(format);
     },
+    getHighest: function(start, end) {
+      var app = document.getElementById("firebaseApp").app;
+      var database = firebase.database(app);
+
+      var addition = 0;
+      var highest = 0;
+
+      database.ref('/Modules/Data/').orderByKey().startAt(start).endAt(end).on('child_added', function(snapshot) {
+        var day = moment(snapshot.key).format('MMM-Do');
+
+        snapshot.forEach(function(childSnapshot) {
+
+          if(childSnapshot.key == document.querySelector('na-streamflow').key[document.querySelector('na-streamflow').moduleSelected]) {
+            addition = childSnapshot.child('strmflow').val();
+
+            if(addition > highest) {
+              highest = addition;
+            }
+
+          }
+
+        });
+
+
+      });
+      return highest;
+    },
     getData: function() {
       var start = this.$.startInput.value;
       var end = this.$.endInput.value;
@@ -265,6 +292,9 @@
       var strmCounter = 0;
       var addition = 0;
       var csv = '';
+      var daydata = [];
+      var strmdata = [];
+      var highest = 0;
 
       database.ref('/Modules/Data/').orderByKey().startAt(start).endAt(end).on('child_added', function(snapshot) {
         var day = moment(snapshot.key).format('MMM-Do');
@@ -272,8 +302,12 @@
         snapshot.forEach(function(childSnapshot) {
 
           if(childSnapshot.key == document.querySelector('na-streamflow').key[document.querySelector('na-streamflow').moduleSelected]) {
-            addition = childSnapshot.child('strmflow').val();
+            //console.log(childSnapshot.child('rainflow').val() + "/" + document.querySelector('na-rainflow').getHighest(start, end) + " = " + childSnapshot.child('rainflow').val() / document.querySelector('na-rainflow').getHighest(start, end));
+            addition = childSnapshot.child('strmflow').val() / document.querySelector('na-streamflow').getHighest(start, end);
+
             var data = [day, addition];
+            daydata[strmCounter] = day;
+            strmdata[strmCounter] = addition;
             if (strmCounter == 0) {
               csv = moment(snapshot.key).format('MMMM Do YYYY') + ',' + '\r\n' + "Day,Time, Streamflow\r\n";
             }
