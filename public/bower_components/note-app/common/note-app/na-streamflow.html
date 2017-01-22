@@ -140,20 +140,11 @@
       <google-chart
         id="strmflow"
         type='line'
-        options='{"title": "Stream Flow"}'
-        cols='[{"label":"Date", "type":"string"}, {"label":"Flow Duration Curve", "type":"number"}]'
-        rows='[[" ", 0],[" ", 0],[" ", 0]]'>
+        options='{"title": "Stream Flow", "vAxes": [{"title": "Flow Duration Curve"}, {"title": "Module Summary"}], "hAxes": [{"title": "Date"}, {"title": "Date"}], "series": [{"targetAxisIndex": 0}, {"targetAxisIndex": 1}]}'  
+        cols='[{"label":"Date", "type":"string"}, {"label":"Flow Duration Curve", "type":"number"}, {"label":"Module Summary", "type":"number"}]'
+        rows='[[" ", 0, 0],[" ", 0, 0],[" ", 0, 0]]'>
       </google-chart>
     </div>
-    <!--<div class="modules-summary-div">
-      <google-chart
-        id="chartline2"
-        type='line'
-        options='{"title": "Stream Flow"}'
-        cols='[{"label":"Hour", "type":"number"}, {"label":"M1", "type":"number"}, {"label":"M2", "type":"number"}]'
-        rows='[[0, 0, 0],[0, 0, 0],[0, 0, 0]]'>
-      </google-chart>
-    </div>-->
   </div>
 
   <iron-signals on-iron-signal-downloadstrm="downloadCsv"></iron-signals>
@@ -255,7 +246,7 @@
       var app = document.getElementById("firebaseApp").app;
       var database = firebase.database(app);
 
-      var addition = 0;
+      var strmdata = 0;
       var highest = 0;
 
       database.ref('/Modules/Data/').orderByKey().startAt(start).endAt(end).on('child_added', function(snapshot) {
@@ -264,10 +255,10 @@
         snapshot.forEach(function(childSnapshot) {
 
           if(childSnapshot.key == document.querySelector('na-streamflow').key[document.querySelector('na-streamflow').moduleSelected]) {
-            addition = childSnapshot.child('strmflow').val();
+            strmdata = childSnapshot.child('strmflow').val();
 
-            if(addition > highest) {
-              highest = addition;
+            if(strmdata > highest) {
+              highest = strmdata;
             }
 
           }
@@ -290,10 +281,9 @@
 
       var stream = [];
       var strmCounter = 0;
-      var addition = 0;
+      var flowdurcurve = 0;
+      var strmdata = 0;
       var csv = '';
-      var daydata = [];
-      var strmdata = [];
       var highest = 0;
 
       database.ref('/Modules/Data/').orderByKey().startAt(start).endAt(end).on('child_added', function(snapshot) {
@@ -303,15 +293,14 @@
 
           if(childSnapshot.key == document.querySelector('na-streamflow').key[document.querySelector('na-streamflow').moduleSelected]) {
             //console.log(childSnapshot.child('rainflow').val() + "/" + document.querySelector('na-rainflow').getHighest(start, end) + " = " + childSnapshot.child('rainflow').val() / document.querySelector('na-rainflow').getHighest(start, end));
-            addition = childSnapshot.child('strmflow').val() / document.querySelector('na-streamflow').getHighest(start, end);
+            flowdurcurve = childSnapshot.child('strmflow').val() / document.querySelector('na-streamflow').getHighest(start, end);
+            strmdata = childSnapshot.child('strmflow').val();
 
-            var data = [day, addition];
-            daydata[strmCounter] = day;
-            strmdata[strmCounter] = addition;
+            var data = [day, flowdurcurve, strmdata];
             if (strmCounter == 0) {
               csv = moment(snapshot.key).format('MMMM Do YYYY') + ',' + '\r\n' + "Day,Time, Streamflow\r\n";
             }
-            csv += moment(snapshot.key).format('dddd, h:mm:ss a') + ',' + addition + '\r\n';
+            csv += moment(snapshot.key).format('dddd, h:mm:ss a') + ',' + flowdurcurve + '\r\n';
             document.querySelector('na-streamflow').csvData = csv;
 
             stream[strmCounter] = data;
