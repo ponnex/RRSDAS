@@ -140,9 +140,9 @@
       <google-chart
         id="strmflow"
         type='line'
-        options='{"title": "Stream Flow", "vAxes": [{"title": "Flow Duration Curve"}, {"title": "Module Summary"}], "hAxes": [{"title": "Date"}, {"title": "Date"}], "series": [{"targetAxisIndex": 0}, {"targetAxisIndex": 1}]}'  
-        cols='[{"label":"Date", "type":"string"}, {"label":"Flow Duration Curve", "type":"number"}, {"label":"Module Summary", "type":"number"}]'
-        rows='[[" ", 0, 0],[" ", 0, 0],[" ", 0, 0]]'>
+        options='{"title": "Stream Flow", "vAxes": [ {"title": "Flow Duration Curve"}, {"title": "Module Summary"}, {"scaleType": "log"}, {"scaleType": "log"} ], "hAxes": [ {"direction": -1} ], "series": [ {"targetAxisIndex": 0}, {"targetAxisIndex": 1} ]}'
+        cols='[ {"label":"Date", "type":"string"}, {"label":"Flow Duration Curve", "type":"number"}, {"label":"Module Summary", "type":"number"} ]'
+        rows='[ [" ", 0, 0],[" ", 0, 0],[" ", 0, 0] ]'>
       </google-chart>
     </div>
   </div>
@@ -209,16 +209,26 @@
       var keyArray = [];
       var modulesCounter = 0;
 
-      database.ref('/Modules/Profiles/').orderByKey().once("value", function(snapshot) {
+      database.ref('/Modules/Profiles/').orderByKey().on("value", function(snapshot) {
 
         snapshot.forEach(function(childSnapshot) {
-          modulesArray[modulesCounter] = childSnapshot.child('name').val();
-          keyArray[modulesCounter] = childSnapshot.key;
-          modulesCounter++;
+          if(childSnapshot.child('name').val() != "") {
+            modulesArray[modulesCounter] = childSnapshot.child('name').val();
+            keyArray[modulesCounter] = childSnapshot.key;
+            modulesCounter++;
+          }
         });
 
-        document.querySelector('na-streamflow').modules = modulesArray;
-        document.querySelector('na-streamflow').key = keyArray;
+        if(modulesArray != "" && keyArray != "") {
+          document.querySelector('na-streamflow').modules = modulesArray;
+          document.querySelector('na-streamflow').key = keyArray;
+        }
+
+        modulesArray = [];
+        keyArray = [];
+        modulesCounter = 0;
+
+      document.querySelector('na-streamflow').$.moduleSelector.selected = 0;
 
       });
     },
