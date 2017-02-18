@@ -393,21 +393,13 @@
 					if (document.querySelector('na-modules').addselector) {
 						document.querySelector('na-modules').$.modal.open();
 					} else {
-						var app = document.getElementById("firebaseApp").app;
-						var database = firebase.database(app);
-
-						database.ref('/Modules/Profiles/' + document.querySelector('na-modules').deletekey  + '/').remove();
+						document.querySelector('na-modules').$.confirmationDialog.open();
 					}
 				} else if (this.$.menuListbox.selected == 3) {
 					if (document.querySelector('na-users').addselector) {
 						document.querySelector('na-users').$.modal.open();
 					} else {
-						var app = document.getElementById("firebaseApp").app;
-						var database = firebase.database(app);
-
-						var updates = {};
-						updates['/Users/' + document.querySelector('na-users').deletekey  + '/deactivate'] = true;
-						database.ref().update(updates);
+						document.querySelector('na-users').$.confirmationDialog.open();
 					}
 				}
 

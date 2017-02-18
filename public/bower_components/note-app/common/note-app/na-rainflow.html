@@ -140,9 +140,9 @@
       <google-chart
         id="rainflow"
         type='line'
-        options='{"title": "Rain Flow", "vAxes": [ {"title": "Flow Duration Curve"}, {"title": "Module Summary"}, {"scaleType": "log"}, {"scaleType": "log"} ], "hAxes": [ {"title": "Date", "direction": -1}, {"title": "Date", "direction": -1} ], "series": [ {"targetAxisIndex": 0}, {"targetAxisIndex": 1} ]}'
-        cols='[ {"label":"Date", "type":"string"}, {"label":"Flow Duration Curve", "type":"number"}, {"label":"Module Summary", "type":"number"} ]'
-        rows='[ [" ", 0, 0],[" ", 0, 0],[" ", 0, 0] ]'>
+        options='{"title": "Rain Flow", "hAxis": [ {"title": "Date", "direction": -1} ]}'
+        cols='[ {"label":"Date", "type":"string"}, {"label":"Module Summary", "type":"number"} ]'
+        rows='[ [" ", 0],[" ", 0],[" ", 0] ]'>
       </google-chart>
     </div>
   </div>
@@ -252,33 +252,6 @@
       this.getData();
       return moment(date).format(format);
     },
-    getHighest: function(start, end) {
-      var app = document.getElementById("firebaseApp").app;
-      var database = firebase.database(app);
-
-      var raindata = 0;
-      var highest = 0;
-
-      database.ref('/Modules/Data/').orderByKey().startAt(start).endAt(end).on('child_added', function(snapshot) {
-        var day = moment(snapshot.key).format('MMM-Do');
-
-        snapshot.forEach(function(childSnapshot) {
-
-          if(childSnapshot.key == document.querySelector('na-rainflow').key[document.querySelector('na-rainflow').moduleSelected]) {
-            raindata = childSnapshot.child('rainflow').val();
-
-            if(raindata > highest) {
-              highest = raindata;
-            }
-
-          }
-
-        });
-
-
-      });
-      return highest;
-    },
     getData: function() {
       var start = this.$.startInput.value;
       var end = this.$.endInput.value;
@@ -302,10 +275,9 @@
 
           if(childSnapshot.key == document.querySelector('na-rainflow').key[document.querySelector('na-rainflow').moduleSelected]) {
             //console.log(childSnapshot.child('rainflow').val() + "/" + document.querySelector('na-rainflow').getHighest(start, end) + " = " + childSnapshot.child('rainflow').val() / document.querySelector('na-rainflow').getHighest(start, end));
-            flowdurcurve = childSnapshot.child('rainflow').val() / document.querySelector('na-rainflow').getHighest(start, end);
             raindata = childSnapshot.child('rainflow').val();
 
-            var data = [day, flowdurcurve, raindata];
+            var data = [day, raindata];
             if (rainCounter == 0) {
               csv = moment(snapshot.key).format('MMMM Do YYYY') + ',' + '\r\n' + "Day,Time, Streamflow\r\n";
             }

@@ -72,6 +72,15 @@
   		</paper-button>
     </div>
   </paper-dialog>
+
+  <paper-dialog id="confirmationDialog" with-backdrop>
+    <h3>Are you sure that you want to perform this action?</h3>
+    <div class="buttons">
+      <paper-button dialog-dismiss>Cancel</paper-button>
+      <paper-button id="delete" on-tap="deleteUser">Delete</paper-button>
+    </div>
+  </paper-dialog>
+
   <vaadin-grid id="sort" style="height: 100%" selection-mode="multi">
   <table>
     <colgroup>
@@ -228,7 +237,7 @@
             database.ref().update(updates);
 
             var toast = document.getElementById("paper_toast");
-  					toast.show("Reactivated User Successfully");
+  					toast.show("User Reactivated");
 
             userDoesntExist = false;
             document.querySelector('na-users').$.signUp.disabled = false;
@@ -251,6 +260,18 @@
       if(this.$.email.value != "" && this.$.firstName.value != "" && this.$.lastName.value != "" && this.$.password.value != "") {
         this.$.signUp.disabled = false;
       }
+    },
+    deleteUser: function() {
+      this.$.confirmationDialog.close();
+      var app = document.getElementById("firebaseApp").app;
+      var database = firebase.database(app);
+
+      var updates = {};
+      updates['/Users/' + document.querySelector('na-users').deletekey  + '/deactivate'] = true;
+      database.ref().update(updates);
+
+      var toast = document.getElementById("paper_toast");
+      toast.show("User Deleted");
     }
 
   });

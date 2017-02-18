@@ -73,6 +73,15 @@
   		</paper-button>
     </div>
   </paper-dialog>
+
+  <paper-dialog id="confirmationDialog" with-backdrop>
+    <h3>Are you sure that you want to perform this action?</h3>
+    <div class="buttons">
+      <paper-button dialog-dismiss>Cancel</paper-button>
+      <paper-button id="delete" on-tap="deleteModule">Delete</paper-button>
+    </div>
+  </paper-dialog>
+
   <vaadin-grid id="sort" style="height: 100%" selection-mode="multi">
   <table>
     <colgroup>
@@ -83,7 +92,9 @@
     </colgroup>
   </table>
   </vaadin-grid>
+
   </template>
+
   <script src="https://cdn.vaadin.com/vaadin-core-elements/latest/webcomponentsjs/webcomponents-lite.min.js"></script>
   <script>
   Polymer({
@@ -214,6 +225,16 @@
       });
 
   	},
+    deleteModule: function() {
+      this.$.confirmationDialog.close();
+      var app = document.getElementById("firebaseApp").app;
+      var database = firebase.database(app);
+
+      database.ref('/Modules/Profiles/' + document.querySelector('na-modules').deletekey  + '/').remove();
+
+      var toast = document.getElementById("paper_toast");
+      toast.show("Module Deleted");
+    },
     _inputChanged: function() {
       if(this.$.name.value == "" || this.$.latitude.value == "" || this.$.longitude.value == "" || this.$.number.value == "") {
         this.$.addModule.disabled = true;
